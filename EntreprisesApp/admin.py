@@ -23,7 +23,21 @@ class UtilisateurAdmin(UserAdmin):
 
 
 
-admin.site.register(Entreprise)
+@admin.register(Entreprise)
+class EntrepriseAdmin(admin.ModelAdmin):
+    list_display=('raison_social','matricule_fiscal','gerant_telephone')
+    search_fields=('raison_social','matricule_fiscal')
+    ordering=('-created_at', )
+    date_hierarchy='created_at'
+    list_per_page=1
+
+    @admin.display(description='Téléphone')
+    def gerant_telephone(self, obj):
+        return obj.gerant.telephone
+
+
+
+
 
 
 
