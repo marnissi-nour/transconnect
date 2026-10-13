@@ -33,6 +33,7 @@ class Utilisateur(AbstractUser):
         validators=[validate_gmail]
     )
 
+
     role = models.CharField(
         max_length=20,
         choices=[
@@ -46,6 +47,9 @@ class Utilisateur(AbstractUser):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     telephone = models.CharField(max_length=8)
+
+    
+    
 
     def save(self, *args, **kwargs):
         if not self.user_id:
