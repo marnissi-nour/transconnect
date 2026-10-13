@@ -69,8 +69,10 @@ class Expedition(models.Model):
 
             self.reference = f"{prefix}{prochain:05d}"
 
+
         self.full_clean()
         super().save(*args, **kwargs)
+    
 
     def clean(self):
         super().clean()
@@ -89,3 +91,4 @@ class Expedition(models.Model):
             f"{self.reference} - "
             f"{self.ville_depart} → {self.ville_arrive}"
         )
+

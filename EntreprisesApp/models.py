@@ -82,7 +82,7 @@ class Entreprise(models.Model):
     raison_social = models.CharField(max_length=100)
 
     matricule_fiscal = models.CharField(
-        max_length=20,
+        max_length=17,
         unique=True,
         validators=[matricule_validator]
     )
