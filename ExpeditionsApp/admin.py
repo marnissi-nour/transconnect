@@ -1,17 +1,14 @@
 from django.contrib import admin
-from .models import Expedition 
-
-# Register your models here.
+from .models import Expedition
 
 
 @admin.register(Expedition)
 class ExpeditionAdmin(admin.ModelAdmin):
-    list_display = ('id', 'description', 'date_souhaitee', 'ville_depart', 'ville_arrive')
-    search_fields = ('description', 'ville_depart', 'ville_arrive')
+    list_display = ('reference', 'date_souhaitee', 'statut')
+    list_filter = ('statut', 'date_souhaitee')
+    search_fields = ('reference',)
+    list_editable = ('statut',)
     ordering = ('-date_souhaitee',)
     date_hierarchy = 'date_souhaitee'
-    list_per_page = 10
-
-
-
+    list_per_page=10
 

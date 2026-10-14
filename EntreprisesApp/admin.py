@@ -1,12 +1,7 @@
 from django.contrib import admin
 from .models import Utilisateur, Entreprise
+
 from django.contrib.auth.admin import UserAdmin
-
-
-
-
-
-
 
 @admin.register(Utilisateur)
 class UtilisateurAdmin(UserAdmin):
@@ -17,8 +12,6 @@ class UtilisateurAdmin(UserAdmin):
     ordering=('-created_at', )
     date_hierarchy='created_at'
     list_per_page=1
-
-
 
 #admin.site.register(Utilisateur, UtilisateurAdmin)
 
