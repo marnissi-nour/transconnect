@@ -22,9 +22,21 @@ class EntrepriseAdmin(admin.ModelAdmin):
     list_display=('raison_social','matricule_fiscal')
     list_filter=('raison_social',)
     search_fields=('raison_social','matricule_fiscal')
-    
-    
 
+    fieldsets = (
+        ('Identité de l\'entreprise', {
+            'fields': ('raison_social', 'matricule_fiscal','type_entreprise')
+        }), 
+        ('Coordonnées', {
+            'fields': ('adresse', 'gerant')
+        }),
+        ('Dates', {
+            'fields': ('created_at', 'updated_at')
+        }),
+    )
+    readonly_fields = ('created_at', 'updated_at')
+    
+     
 
 
 

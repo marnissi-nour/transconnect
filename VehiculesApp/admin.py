@@ -12,3 +12,16 @@ class VehiculeAdmin(admin.ModelAdmin):
     ordering = ('-created_at',)
     date_hierarchy = 'created_at'
     list_per_page = 10
+
+    fieldsets = (
+        ('Informations générales', {
+            'fields': ('immatriculation', 'type_vehicule', 'capacite_kg', 'entreprise')
+        }),
+        ('Statut de disponibilité', {
+            'fields': ('disponible',)
+        }),
+        ('Dates', {
+            'fields': ('created_at', 'updated_at')
+        }),
+    )
+    readonly_fields = ('created_at', 'updated_at')

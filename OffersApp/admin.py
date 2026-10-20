@@ -14,3 +14,15 @@ class OffreAdmin(admin.ModelAdmin):
     date_hierarchy = 'date_proposition'
     list_per_page = 10
 
+    fieldsets = (
+        ('Informations générales', {
+            'fields': ('prix', 'date_proposition', 'delai_jours', 'transporteur', 'expedition', 'vehicule')
+        }),
+        ('Dates', {
+            'fields': ('created_at', 'updated_at')
+        }),
+        ('Statut de l\'offre', {
+            'fields': ('statut',)
+        })
+    )
+    readonly_fields = ('created_at', 'updated_at')
