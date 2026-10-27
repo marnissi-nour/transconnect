@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}Offre {{ offre.pk }}{% endblock %}
+
+{% block content %}
+<h1>Offre {{ offre.pk }}</h1>
+<table>
+    <tr><th>Prix</th><td>{{ offre.prix|floatformat:2 }} DT</td></tr>
+    <tr><th>Statut</th><td>{{ offre.get_statut_display|default:"Non renseigné" }}</td></tr>
+    <tr><th>Date</th><td>{{ offre.date_proposition|date:"d/m/Y" }}</td></tr>
+    <tr><th>Délai</th><td>{{ offre.delai_jours|default:"Non renseigné" }} jour(s)</td></tr>
+    <tr><th>Transporteur</th><td>{{ offre.transporteur.raison_social|default:"Non renseigné" }}</td></tr>
+    <tr><th>Expédition</th><td>{{ offre.expedition.reference|default:"Non renseignée" }}</td></tr>
+    <tr><th>Véhicule</th><td>{{ offre.vehicule.immatriculation|upper }}</td></tr>
+</table>
+<a href="{% url 'offres:supprimer' offre.pk %}">Supprimer</a>
+<a href="{% url 'offres:liste' %}">Retour aux offres</a>
+{% endblock %}

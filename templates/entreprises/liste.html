@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}Entreprises{% endblock %}
+
+{% block content %}
+<h1>Entreprises</h1>
+<ul>
+    {% for entreprise in entreprises %}
+        <li>
+            <a href="{% url 'entreprises:detail' entreprise.pk %}">
+                {{ entreprise.raison_social|upper }}
+            </a>
+            — {{ entreprise.get_type_entreprise_display|default:"Type non renseigné" }}
+            — créée le {{ entreprise.created_at|date:"d/m/Y" }}
+            <a href="{% url 'entreprises:supprimer' entreprise.pk %}">
+                Supprimer
+            </a>
+        </li>
+    {% empty %}
+        <li>Aucune entreprise enregistrée.</li>
+    {% endfor %}
+</ul>
+{% endblock %}

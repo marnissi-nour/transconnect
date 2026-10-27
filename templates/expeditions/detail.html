@@ -1,58 +1,36 @@
+{% extends "base.html" %}
+
 {% block title %}{{ expedition.reference }}{% endblock %}
 
 {% block content %}
 <h1>{{ expedition.reference }}</h1>
-
 <table>
-    <thead>
-        <tr>
-            <th>Référence</th>
-            <th>Départ</th>
-            <th>Arrivée</th>
-            <th>Poids</th>
-            <th>Date souhaitée</th>
-            <th>Description</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td>{{ expedition.reference }}</td>
-            <td>{{ expedition.ville_depart }}</td>
-            <td>{{ expedition.ville_arrive }}</td>
-            <td>{{ expedition.poids_kg|floatformat:0 }} kg</td>
-            <td>{{ expedition.date_souhaitee|date:"d/m/Y" }}</td>
-            <td>{{ expedition.description|default:"Aucune description fournie." }}</td>
-        </tr>
-    </tbody>
+    <tr><th>Départ</th><td>{{ expedition.ville_depart }}</td></tr>
+    <tr><th>Arrivée</th><td>{{ expedition.ville_arrive }}</td></tr>
+    <tr><th>Poids</th><td>{{ expedition.poids_kg|floatformat:0 }} kg</td></tr>
+    <tr><th>Date souhaitée</th><td>{{ expedition.date_souhaitee|date:"d/m/Y" }}</td></tr>
+    <tr><th>Description</th><td>{{ expedition.description|default:"Aucune description fournie." }}</td></tr>
 </table>
 
 <h2>Offres</h2>
 <table>
-    <thead>
-        <tr>
-            <th>Prix</th>
-            <th>Transporteur</th>
-            <th>Véhicule</th>
-            <th>Délai</th>
-            <th>Statut</th>
-        </tr>
-    </thead>
-    <tbody>
+    <tr>
+        <th>Prix</th><th>Transporteur</th><th>Véhicule</th>
+        <th>Délai</th><th>Statut</th>
+    </tr>
     {% for offre in offres %}
         <tr>
             <td>{{ offre.prix|floatformat:2 }} DT</td>
-            <td>{{ offre.transporteur.raison_social }}</td>
-            <td>{{ offre.vehicule.immatriculation }}</td>
-            <td>{{ offre.delai_jours }} jour(s)</td>
-            <td>{{ offre.get_statut_display }}</td>
+            <td>{{ offre.transporteur.raison_social|default:"Non renseigné" }}</td>
+            <td>{{ offre.vehicule.immatriculation|upper }}</td>
+            <td>{{ offre.delai_jours|default:"Non renseigné" }} jour(s)</td>
+            <td>{{ offre.get_statut_display|default:"Non renseigné" }}</td>
         </tr>
     {% empty %}
-        <tr>
-            <td colspan="5">Aucune offre disponible pour le moment.</td>
-        </tr>
+        <tr><td colspan="5">Aucune offre disponible pour le moment.</td></tr>
     {% endfor %}
-    </tbody>
 </table>
 
+<a href="{% url 'expeditions:supprimer' expedition.reference %}">Supprimer</a>
 <a href="{% url 'expeditions:liste' %}">Retour aux expéditions</a>
 {% endblock %}

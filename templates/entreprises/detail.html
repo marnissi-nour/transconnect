@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}{{ entreprise.raison_social }}{% endblock %}
+
+{% block content %}
+<h1>{{ entreprise.raison_social|upper }}</h1>
+<table>
+    <tr><th>Matricule fiscal</th><td>{{ entreprise.matricule_fiscal }}</td></tr>
+    <tr><th>Type</th><td>{{ entreprise.get_type_entreprise_display|default:"Non renseigné" }}</td></tr>
+    <tr><th>Adresse</th><td>{{ entreprise.adresse|default:"Non renseignée"|linebreaksbr }}</td></tr>
+    <tr><th>Gérant</th><td>{{ entreprise.gerant.username|default:"Non renseigné" }}</td></tr>
+    <tr><th>Créée le</th><td>{{ entreprise.created_at|date:"d/m/Y" }}</td></tr>
+</table>
+<a href="{% url 'entreprises:supprimer' entreprise.pk %}">Supprimer</a>
+<a href="{% url 'entreprises:liste' %}">Retour aux entreprises</a>
+{% endblock %}

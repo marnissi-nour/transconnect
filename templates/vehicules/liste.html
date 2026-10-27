@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}Véhicules{% endblock %}
+
+{% block content %}
+<h1>Véhicules</h1>
+<ul>
+    {% for vehicule in vehicules %}
+        <li>
+            <a href="{% url 'vehicules:detail' vehicule.pk %}">
+                {{ vehicule.immatriculation|upper }}
+            </a>
+            — {{ vehicule.get_type_vehicule_display|default:"Type non renseigné" }}
+            — {{ vehicule.capacite_kg|floatformat:0 }} kg
+            — {{ vehicule.disponible|yesno:"Disponible,Indisponible" }}
+            <a href="{% url 'vehicules:supprimer' vehicule.pk %}">Supprimer</a>
+        </li>
+    {% empty %}
+        <li>Aucun véhicule enregistré.</li>
+    {% endfor %}
+</ul>
+{% endblock %}

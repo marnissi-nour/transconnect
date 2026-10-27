@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}Offres{% endblock %}
+
+{% block content %}
+<h1>Offres</h1>
+<ul>
+    {% for offre in offres %}
+        <li>
+            <a href="{% url 'offres:detail' offre.pk %}">Offre {{ offre.pk }}</a>
+            — {{ offre.prix|floatformat:2 }} DT
+            — {{ offre.get_statut_display|default:"Statut non renseigné"|lower }}
+            — {{ offre.date_proposition|date:"d/m/Y" }}
+            <a href="{% url 'offres:supprimer' offre.pk %}">Supprimer</a>
+        </li>
+    {% empty %}
+        <li>Aucune offre enregistrée.</li>
+    {% endfor %}
+</ul>
+{% endblock %}

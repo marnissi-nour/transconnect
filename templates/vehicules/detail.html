@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}{{ vehicule.immatriculation }}{% endblock %}
+
+{% block content %}
+<h1>{{ vehicule.immatriculation|upper }}</h1>
+<table>
+    <tr><th>Type</th><td>{{ vehicule.get_type_vehicule_display|default:"Non renseigné" }}</td></tr>
+    <tr><th>Capacité</th><td>{{ vehicule.capacite_kg|floatformat:0 }} kg</td></tr>
+    <tr><th>Disponibilité</th><td>{% if vehicule.disponible %}Disponible{% else %}Indisponible{% endif %}</td></tr>
+    <tr><th>Entreprise</th><td>{{ vehicule.entreprise.raison_social|default:"Non renseignée" }}</td></tr>
+</table>
+<a href="{% url 'vehicules:supprimer' vehicule.pk %}">Supprimer</a>
+<a href="{% url 'vehicules:liste' %}">Retour aux véhicules</a>
+{% endblock %}

@@ -22,5 +22,8 @@ from config import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('Expeditions/', include('ExpeditionsApp.urls')),
+    path('Vehicules/', include('VehiculesApp.urls')),
+    path('Offres/', include('OffersApp.urls')),
+    path('Entreprises/', include('EntreprisesApp.urls')),
     path('<str:nom>/', views.index, name='index'),
 ]

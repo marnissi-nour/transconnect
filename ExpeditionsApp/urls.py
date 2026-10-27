@@ -5,6 +5,11 @@ from . import views
 app_name = "expeditions"
 
 urlpatterns = [
-    path("", views.list_expeditions, name="liste"),
-    path("<str:reference>/", views.expedition_detail, name="detail"),
+    path("", views.liste_expeditions, name="liste"),
+    path("<str:reference>/", views.detail_expedition, name="detail"),
+    path(
+        "<str:reference>/supprimer/",
+        views.supprimer_expedition,
+        name="supprimer",
+    ),
 ]
