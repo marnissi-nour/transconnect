@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}Offre{% endblock %}
+
+{% block content %}
+<div class="content-card form-card">
+    <h1>Créer ou modifier une offre</h1>
+    <p>Proposez une solution de transport adaptée à l'expédition.</p>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <div class="form-actions">
+            <button class="button" type="submit">Enregistrer</button>
+            <a class="button button-secondary" href="{% url 'offres:liste' %}">Annuler</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

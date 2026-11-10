@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}Expédition{% endblock %}
+
+{% block content %}
+<div class="content-card form-card">
+    <h1>Créer ou modifier une expédition</h1>
+    <p>Renseignez les informations nécessaires à votre transport.</p>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <div class="form-actions">
+            <button class="button" type="submit">Enregistrer</button>
+            <a class="button button-secondary" href="{% url 'expeditions:liste' %}">Annuler</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

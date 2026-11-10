@@ -1,11 +1,9 @@
-from django.http import HttpResponse
+from django.shortcuts import render
 
 
+def home(request):
+    return render(request, "home.html")
 
 
-
-def index(request,nom):
-    return HttpResponse(f" <h1>Welcome to home page, {nom}.</h1>")
-
-
-
+def index(request, nom):
+    return render(request, "home.html", {"name": nom})

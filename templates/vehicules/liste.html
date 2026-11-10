@@ -3,20 +3,91 @@
 {% block title %}Véhicules{% endblock %}
 
 {% block content %}
-<h1>Véhicules</h1>
-<ul>
+<div class="page-heading">
+    <div>
+        <h1>Véhicules</h1>
+        <p>Gérez votre flotte et la disponibilité des véhicules.</p>
+    </div>
+    <a class="button" href="{% url 'vehicules:ajouter' %}">Ajouter un véhicule</a>
+</div>
+<form class="filter-panel" method="get">
+    <div class="filter-fields">
+        <div class="filter-field">
+            <label for="vehicule-search">Recherche</label>
+            <input id="vehicule-search" name="q" type="search"
+                   value="{{ filters.q }}"
+                   placeholder="Immatriculation ou entreprise">
+        </div>
+        <div class="filter-field">
+            <label for="type-vehicule">Type</label>
+            <select id="type-vehicule" name="type_vehicule">
+                <option value="">Tous les types</option>
+                {% for value, label in type_choices %}
+                    <option value="{{ value }}"
+                            {% if filters.type_vehicule == value %}selected{% endif %}>
+                        {{ label }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="filter-field">
+            <label for="disponible">Disponibilité</label>
+            <select id="disponible" name="disponible">
+                <option value="">Toutes</option>
+                <option value="true"
+                        {% if filters.disponible == "true" %}selected{% endif %}>
+                    Disponible
+                </option>
+                <option value="false"
+                        {% if filters.disponible == "false" %}selected{% endif %}>
+                    Indisponible
+                </option>
+            </select>
+        </div>
+        <div class="filter-field">
+            <label for="vehicule-entreprise">Entreprise</label>
+            <input id="vehicule-entreprise" name="entreprise" type="text"
+                   value="{{ filters.entreprise }}"
+                   placeholder="Nom de l'entreprise">
+        </div>
+    </div>
+    <div class="filter-actions">
+        <button class="button" type="submit">Rechercher</button>
+        <a class="button button-secondary"
+           href="{% url 'vehicules:liste' %}">Réinitialiser</a>
+    </div>
+</form>
+<ul class="cards">
     {% for vehicule in vehicules %}
-        <li>
-            <a href="{% url 'vehicules:detail' vehicule.pk %}">
-                {{ vehicule.immatriculation|upper }}
-            </a>
-            — {{ vehicule.get_type_vehicule_display|default:"Type non renseigné" }}
-            — {{ vehicule.capacite_kg|floatformat:0 }} kg
-            — {{ vehicule.disponible|yesno:"Disponible,Indisponible" }}
-            <a href="{% url 'vehicules:supprimer' vehicule.pk %}">Supprimer</a>
+        <li class="card">
+            <div class="card-header">
+                <a class="card-title" href="{% url 'vehicules:detail' vehicule.pk %}">
+                    {{ vehicule.immatriculation|upper }}
+                </a>
+                {% if vehicule.disponible %}
+                    <span class="status status-success">Disponible</span>
+                {% else %}
+                    <span class="status status-danger">Indisponible</span>
+                {% endif %}
+            </div>
+            <p class="card-meta">
+                <span>{{ vehicule.get_type_vehicule_display|default:"Type non renseigné" }}</span>
+                <span>{{ vehicule.capacite_kg|floatformat:0 }} kg</span>
+            </p>
+            <div class="card-actions">
+                <a class="button button-secondary" href="{% url 'vehicules:detail' vehicule.pk %}">Voir le détail</a>
+                <span>
+                    <a class="button button-secondary" href="{% url 'vehicules:modifier' vehicule.pk %}">Modifier</a>
+                    <a class="button button-danger" href="{% url 'vehicules:supprimer' vehicule.pk %}"
+                       data-delete-url="{% url 'vehicules:supprimer' vehicule.pk %}"
+                       data-delete-message="Supprimer le véhicule {{ vehicule.immatriculation|escapejs }} ?">
+                        Supprimer
+                    </a>
+                </span>
+            </div>
         </li>
     {% empty %}
-        <li>Aucun véhicule enregistré.</li>
+        <li class="empty-state">Aucun véhicule enregistré.</li>
     {% endfor %}
 </ul>
 {% endblock %}

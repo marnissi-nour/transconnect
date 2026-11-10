@@ -3,16 +3,30 @@
 {% block title %}Offre {{ offre.pk }}{% endblock %}
 
 {% block content %}
-<h1>Offre {{ offre.pk }}</h1>
-<table>
-    <tr><th>Prix</th><td>{{ offre.prix|floatformat:2 }} DT</td></tr>
-    <tr><th>Statut</th><td>{{ offre.get_statut_display|default:"Non renseigné" }}</td></tr>
-    <tr><th>Date</th><td>{{ offre.date_proposition|date:"d/m/Y" }}</td></tr>
-    <tr><th>Délai</th><td>{{ offre.delai_jours|default:"Non renseigné" }} jour(s)</td></tr>
-    <tr><th>Transporteur</th><td>{{ offre.transporteur.raison_social|default:"Non renseigné" }}</td></tr>
-    <tr><th>Expédition</th><td>{{ offre.expedition.reference|default:"Non renseignée" }}</td></tr>
-    <tr><th>Véhicule</th><td>{{ offre.vehicule.immatriculation|upper }}</td></tr>
-</table>
-<a href="{% url 'offres:supprimer' offre.pk %}">Supprimer</a>
-<a href="{% url 'offres:liste' %}">Retour aux offres</a>
+<div class="page-heading">
+    <div>
+        <h1>Offre #{{ offre.pk }}</h1>
+        <p>Proposition de transport pour une expédition.</p>
+    </div>
+</div>
+<div class="content-card">
+    <dl class="detail-grid">
+        <div class="detail-item"><dt>Prix</dt><dd>{{ offre.prix|floatformat:2 }} DT</dd></div>
+        <div class="detail-item"><dt>Statut</dt><dd>{{ offre.get_statut_display|default:"Non renseigné" }}</dd></div>
+        <div class="detail-item"><dt>Date</dt><dd>{{ offre.date_proposition|date:"d/m/Y" }}</dd></div>
+        <div class="detail-item"><dt>Délai</dt><dd>{{ offre.delai_jours|default:"Non renseigné" }} jour(s)</dd></div>
+        <div class="detail-item"><dt>Transporteur</dt><dd>{{ offre.transporteur.raison_social|default:"Non renseigné" }}</dd></div>
+        <div class="detail-item"><dt>Expédition</dt><dd>{{ offre.expedition.reference|default:"Non renseignée" }}</dd></div>
+        <div class="detail-item"><dt>Véhicule</dt><dd>{{ offre.vehicule.immatriculation|upper }}</dd></div>
+    </dl>
+    <div class="page-actions">
+        <a class="button" href="{% url 'offres:modifier' offre.pk %}">Modifier</a>
+        <a class="button button-danger" href="{% url 'offres:supprimer' offre.pk %}"
+           data-delete-url="{% url 'offres:supprimer' offre.pk %}"
+           data-delete-message="Supprimer l'offre numéro {{ offre.pk }} ?">
+            Supprimer
+        </a>
+        <a class="button button-secondary" href="{% url 'offres:liste' %}">Retour</a>
+    </div>
+</div>
 {% endblock %}

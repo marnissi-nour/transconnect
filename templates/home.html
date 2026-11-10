@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}Accueil | TransConnect{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <div>
+        <h1>Le transport qui crée des connexions.</h1>
+        <p>
+            TransConnect simplifie la mise en relation entre entreprises,
+            expéditeurs et transporteurs pour une logistique plus fluide.
+        </p>
+        <a class="button" href="{% url 'expeditions:liste' %}">
+            Découvrir les expéditions
+        </a>
+    </div>
+    <div class="hero-visual" aria-hidden="true">
+        <svg viewBox="0 0 220 160" xmlns="http://www.w3.org/2000/svg">
+            <path d="M20 110h180" stroke="#bfdbfe" stroke-width="8"
+                  stroke-linecap="round"/>
+            <path d="M35 88h105v42H35z" fill="#fbbf24"/>
+            <path d="M140 105h28l17 25h-45z" fill="#f59e0b"/>
+            <circle cx="65" cy="138" r="13" fill="#172554"/>
+            <circle cx="165" cy="138" r="13" fill="#172554"/>
+            <path d="M24 54h120l-18-18 12-12 40 40-40 40-12-12 18-18H24z"
+                  fill="#fef3c7"/>
+        </svg>
+    </div>
+</section>
+
+<section class="feature-grid" aria-label="Services TransConnect">
+    <article class="feature-card">
+        <div class="feature-icon">↔</div>
+        <h2>Expéditions</h2>
+        <p>Publiez et suivez vos besoins de transport en toute simplicité.</p>
+        <a class="card-title" href="{% url 'expeditions:liste' %}">
+            Voir les expéditions
+        </a>
+    </article>
+    <article class="feature-card">
+        <div class="feature-icon">▣</div>
+        <h2>Véhicules</h2>
+        <p>Gérez votre flotte, ses capacités et ses disponibilités.</p>
+        <a class="card-title" href="{% url 'vehicules:liste' %}">
+            Gérer les véhicules
+        </a>
+    </article>
+    <article class="feature-card">
+        <div class="feature-icon">◆</div>
+        <h2>Offres</h2>
+        <p>Comparez les propositions pour choisir le transport adapté.</p>
+        <a class="card-title" href="{% url 'offres:liste' %}">
+            Consulter les offres
+        </a>
+    </article>
+    <article class="feature-card">
+        <div class="feature-icon">●</div>
+        <h2>Entreprises</h2>
+        <p>Retrouvez les partenaires qui font avancer votre activité.</p>
+        <a class="card-title" href="{% url 'entreprises:liste' %}">
+            Voir les entreprises
+        </a>
+    </article>
+</section>
+{% endblock %}

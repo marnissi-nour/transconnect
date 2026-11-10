@@ -3,14 +3,28 @@
 {% block title %}{{ entreprise.raison_social }}{% endblock %}
 
 {% block content %}
-<h1>{{ entreprise.raison_social|upper }}</h1>
-<table>
-    <tr><th>Matricule fiscal</th><td>{{ entreprise.matricule_fiscal }}</td></tr>
-    <tr><th>Type</th><td>{{ entreprise.get_type_entreprise_display|default:"Non renseigné" }}</td></tr>
-    <tr><th>Adresse</th><td>{{ entreprise.adresse|default:"Non renseignée"|linebreaksbr }}</td></tr>
-    <tr><th>Gérant</th><td>{{ entreprise.gerant.username|default:"Non renseigné" }}</td></tr>
-    <tr><th>Créée le</th><td>{{ entreprise.created_at|date:"d/m/Y" }}</td></tr>
-</table>
-<a href="{% url 'entreprises:supprimer' entreprise.pk %}">Supprimer</a>
-<a href="{% url 'entreprises:liste' %}">Retour aux entreprises</a>
+<div class="page-heading">
+    <div>
+        <h1>{{ entreprise.raison_social|upper }}</h1>
+        <p>Fiche partenaire TransConnect.</p>
+    </div>
+</div>
+<div class="content-card">
+    <dl class="detail-grid">
+        <div class="detail-item"><dt>Matricule fiscal</dt><dd>{{ entreprise.matricule_fiscal }}</dd></div>
+        <div class="detail-item"><dt>Type</dt><dd>{{ entreprise.get_type_entreprise_display|default:"Non renseigné" }}</dd></div>
+        <div class="detail-item"><dt>Adresse</dt><dd>{{ entreprise.adresse|default:"Non renseignée"|linebreaksbr }}</dd></div>
+        <div class="detail-item"><dt>Gérant</dt><dd>{{ entreprise.gerant.username|default:"Non renseigné" }}</dd></div>
+        <div class="detail-item"><dt>Créée le</dt><dd>{{ entreprise.created_at|date:"d/m/Y" }}</dd></div>
+    </dl>
+    <div class="page-actions">
+        <a class="button" href="{% url 'entreprises:modifier' entreprise.pk %}">Modifier</a>
+        <a class="button button-danger" href="{% url 'entreprises:supprimer' entreprise.pk %}"
+           data-delete-url="{% url 'entreprises:supprimer' entreprise.pk %}"
+           data-delete-message="Supprimer {{ entreprise.raison_social|escapejs }} ?">
+            Supprimer
+        </a>
+        <a class="button button-secondary" href="{% url 'entreprises:liste' %}">Retour</a>
+    </div>
+</div>
 {% endblock %}

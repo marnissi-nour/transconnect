@@ -3,34 +3,51 @@
 {% block title %}{{ expedition.reference }}{% endblock %}
 
 {% block content %}
-<h1>{{ expedition.reference }}</h1>
-<table>
-    <tr><th>Départ</th><td>{{ expedition.ville_depart }}</td></tr>
-    <tr><th>Arrivée</th><td>{{ expedition.ville_arrive }}</td></tr>
-    <tr><th>Poids</th><td>{{ expedition.poids_kg|floatformat:0 }} kg</td></tr>
-    <tr><th>Date souhaitée</th><td>{{ expedition.date_souhaitee|date:"d/m/Y" }}</td></tr>
-    <tr><th>Description</th><td>{{ expedition.description|default:"Aucune description fournie." }}</td></tr>
-</table>
-
-<h2>Offres</h2>
-<table>
-    <tr>
-        <th>Prix</th><th>Transporteur</th><th>Véhicule</th>
-        <th>Délai</th><th>Statut</th>
-    </tr>
-    {% for offre in offres %}
-        <tr>
-            <td>{{ offre.prix|floatformat:2 }} DT</td>
-            <td>{{ offre.transporteur.raison_social|default:"Non renseigné" }}</td>
-            <td>{{ offre.vehicule.immatriculation|upper }}</td>
-            <td>{{ offre.delai_jours|default:"Non renseigné" }} jour(s)</td>
-            <td>{{ offre.get_statut_display|default:"Non renseigné" }}</td>
-        </tr>
-    {% empty %}
-        <tr><td colspan="5">Aucune offre disponible pour le moment.</td></tr>
-    {% endfor %}
-</table>
-
-<a href="{% url 'expeditions:supprimer' expedition.reference %}">Supprimer</a>
-<a href="{% url 'expeditions:liste' %}">Retour aux expéditions</a>
+<div class="page-heading">
+    <div>
+        <h1>{{ expedition.reference }}</h1>
+        <p>Détails de l'expédition et propositions de transport.</p>
+    </div>
+</div>
+<div class="content-card">
+    <dl class="detail-grid">
+        <div class="detail-item"><dt>Départ</dt><dd>{{ expedition.ville_depart }}</dd></div>
+        <div class="detail-item"><dt>Arrivée</dt><dd>{{ expedition.ville_arrive }}</dd></div>
+        <div class="detail-item"><dt>Poids</dt><dd>{{ expedition.poids_kg|floatformat:0 }} kg</dd></div>
+        <div class="detail-item"><dt>Date souhaitée</dt><dd>{{ expedition.date_souhaitee|date:"d/m/Y" }}</dd></div>
+        <div class="detail-item"><dt>Description</dt><dd>{{ expedition.description|default:"Aucune description fournie." }}</dd></div>
+    </dl>
+    <div class="page-actions">
+        <a class="button" href="{% url 'expeditions:modifier' expedition.reference %}">Modifier</a>
+        <a class="button button-danger"
+           href="{% url 'expeditions:supprimer' expedition.reference %}"
+           data-delete-url="{% url 'expeditions:supprimer' expedition.reference %}"
+           data-delete-message="Supprimer l'expédition {{ expedition.reference|escapejs }} ?">
+            Supprimer
+        </a>
+        <a class="button button-secondary" href="{% url 'expeditions:liste' %}">Retour</a>
+    </div>
+</div>
+<div class="content-card section-card">
+    <h2>Offres reçues</h2>
+    <div class="table-wrapper">
+        <table>
+            <tr>
+                <th>Prix</th><th>Transporteur</th><th>Véhicule</th>
+                <th>Délai</th><th>Statut</th>
+            </tr>
+            {% for offre in offres %}
+                <tr>
+                    <td>{{ offre.prix|floatformat:2 }} DT</td>
+                    <td>{{ offre.transporteur.raison_social|default:"Non renseigné" }}</td>
+                    <td>{{ offre.vehicule.immatriculation|upper }}</td>
+                    <td>{{ offre.delai_jours|default:"Non renseigné" }} jour(s)</td>
+                    <td>{{ offre.get_statut_display|default:"Non renseigné" }}</td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="5">Aucune offre disponible pour le moment.</td></tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>
 {% endblock %}

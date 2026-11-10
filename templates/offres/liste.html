@@ -3,18 +3,85 @@
 {% block title %}Offres{% endblock %}
 
 {% block content %}
-<h1>Offres</h1>
-<ul>
+<div class="page-heading">
+    <div>
+        <h1>Offres de transport</h1>
+        <p>Comparez les propositions reçues pour vos expéditions.</p>
+    </div>
+    <a class="button" href="{% url 'offres:ajouter' %}">Ajouter une offre</a>
+</div>
+<form class="filter-panel" method="get">
+    <div class="filter-fields">
+        <div class="filter-field">
+            <label for="offre-search">Recherche</label>
+            <input id="offre-search" name="q" type="search"
+                   value="{{ filters.q }}"
+                   placeholder="Expédition, véhicule ou transporteur">
+        </div>
+        <div class="filter-field">
+            <label for="offre-statut">Statut</label>
+            <select id="offre-statut" name="statut">
+                <option value="">Tous les statuts</option>
+                {% for value, label in statut_choices %}
+                    <option value="{{ value }}"
+                            {% if filters.statut == value %}selected{% endif %}>
+                        {{ label }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="filter-field">
+            <label for="transporteur">Transporteur</label>
+            <input id="transporteur" name="transporteur" type="text"
+                   value="{{ filters.transporteur }}"
+                   placeholder="Nom du transporteur">
+        </div>
+    </div>
+    <div class="filter-actions">
+        <button class="button" type="submit">Rechercher</button>
+        <a class="button button-secondary"
+           href="{% url 'offres:liste' %}">Réinitialiser</a>
+    </div>
+</form>
+<ul class="cards">
     {% for offre in offres %}
-        <li>
-            <a href="{% url 'offres:detail' offre.pk %}">Offre {{ offre.pk }}</a>
-            — {{ offre.prix|floatformat:2 }} DT
-            — {{ offre.get_statut_display|default:"Statut non renseigné"|lower }}
-            — {{ offre.date_proposition|date:"d/m/Y" }}
-            <a href="{% url 'offres:supprimer' offre.pk %}">Supprimer</a>
+        <li class="card">
+            <div class="card-header">
+                <a class="card-title" href="{% url 'offres:detail' offre.pk %}">Offre #{{ offre.pk }}</a>
+                {% if offre.statut == "acceptee" %}
+                    <span class="status status-success">
+                        {{ offre.get_statut_display }}
+                    </span>
+                {% elif offre.statut == "refusee" or offre.statut == "retiree" %}
+                    <span class="status status-danger">
+                        {{ offre.get_statut_display }}
+                    </span>
+                {% else %}
+                    <span class="status status-warning">
+                        {{ offre.get_statut_display|default:"Statut non renseigné" }}
+                    </span>
+                {% endif %}
+            </div>
+            <p class="card-route"><strong>{{ offre.prix|floatformat:2 }} DT</strong></p>
+            <p class="card-meta">
+                <span>{{ offre.transporteur.raison_social }}</span>
+                <span>{{ offre.vehicule.immatriculation|upper }}</span>
+                <span>{{ offre.delai_jours }} jour(s)</span>
+            </p>
+            <div class="card-actions">
+                <a class="button button-secondary" href="{% url 'offres:detail' offre.pk %}">Voir le détail</a>
+                <span>
+                    <a class="button button-secondary" href="{% url 'offres:modifier' offre.pk %}">Modifier</a>
+                    <a class="button button-danger" href="{% url 'offres:supprimer' offre.pk %}"
+                       data-delete-url="{% url 'offres:supprimer' offre.pk %}"
+                       data-delete-message="Supprimer l'offre numéro {{ offre.pk }} ?">
+                        Supprimer
+                    </a>
+                </span>
+            </div>
         </li>
     {% empty %}
-        <li>Aucune offre enregistrée.</li>
+        <li class="empty-state">Aucune offre enregistrée.</li>
     {% endfor %}
 </ul>
 {% endblock %}

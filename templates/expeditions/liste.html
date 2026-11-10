@@ -1,27 +1,113 @@
 {% extends "base.html" %}
 
-{% block title %}Expéditions disponibles{% endblock %}
+{% block title %}Toutes les expéditions{% endblock %}
 
 {% block content %}
-<h1>Expéditions publiées</h1>
-<ul>
+<div class="page-heading">
+    <div>
+        <h1>Toutes les expéditions</h1>
+        <p>Consultez et gérez toutes les expéditions de la plateforme.</p>
+    </div>
+    <a class="button" href="{% url 'expeditions:ajouter' %}">
+        Ajouter une expédition
+    </a>
+</div>
+
+<form class="filter-panel" method="get">
+    <div class="filter-fields">
+        <div class="filter-field">
+            <label for="search">Recherche</label>
+            <input id="search" name="q" type="search"
+                   value="{{ filters.q }}"
+                   placeholder="Référence, ville ou description">
+        </div>
+        <div class="filter-field">
+            <label for="statut">Statut</label>
+            <select id="statut" name="statut">
+                <option value="">Tous les statuts</option>
+                {% for value, label in statut_choices %}
+                    <option value="{{ value }}"
+                            {% if filters.statut == value %}selected{% endif %}>
+                        {{ label }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="filter-field">
+            <label for="depart">Départ</label>
+            <input id="depart" name="depart" type="text"
+                   value="{{ filters.depart }}" placeholder="Ville de départ">
+        </div>
+        <div class="filter-field">
+            <label for="arrivee">Arrivée</label>
+            <input id="arrivee" name="arrivee" type="text"
+                   value="{{ filters.arrivee }}" placeholder="Ville d'arrivée">
+        </div>
+    </div>
+    <div class="filter-actions">
+        <button class="button" type="submit">Rechercher</button>
+        <a class="button button-secondary"
+           href="{% url 'expeditions:liste' %}">Réinitialiser</a>
+    </div>
+</form>
+
+<ul class="cards">
     {% for expedition in expeditions %}
-        <li>
-            <a href="{% url 'expeditions:detail' expedition.reference %}">
-                {{ expedition.reference|upper }}
-            </a>
-            — {{ expedition.ville_depart }} → {{ expedition.ville_arrive }}
-            ({{ expedition.poids_kg|floatformat:0 }} kg,
-            souhaitée le {{ expedition.date_souhaitee|date:"d/m/Y" }})
+        <li class="card">
+            <div class="card-header">
+                <a class="card-title"
+                   href="{% url 'expeditions:detail' expedition.reference %}">
+                    {{ expedition.reference|upper }}
+                </a>
+                {% if expedition.statut == "publiee" %}
+                    <span class="status status-success">
+                        {{ expedition.get_statut_display }}
+                    </span>
+                {% elif expedition.statut == "annulee" %}
+                    <span class="status status-danger">
+                        {{ expedition.get_statut_display }}
+                    </span>
+                {% else %}
+                    <span class="status status-warning">
+                        {{ expedition.get_statut_display }}
+                    </span>
+                {% endif %}
+            </div>
+            <p class="card-route">
+                <strong>{{ expedition.ville_depart }}</strong>
+                <span aria-hidden="true">→</span>
+                <strong>{{ expedition.ville_arrive }}</strong>
+            </p>
+            <p class="card-meta">
+                <span>{{ expedition.poids_kg|floatformat:0 }} kg</span>
+                <span>
+                    Souhaitée le {{ expedition.date_souhaitee|date:"d/m/Y" }}
+                </span>
+            </p>
             <p>
                 {{ expedition.description|default:"Aucune description fournie."|truncatewords:15 }}
             </p>
-            <a href="{% url 'expeditions:supprimer' expedition.reference %}">
-                Supprimer
-            </a>
+            <div class="card-actions">
+                <a class="button button-secondary"
+                   href="{% url 'expeditions:detail' expedition.reference %}">
+                    Voir le détail
+                </a>
+                <span>
+                    <a class="button button-secondary"
+                       href="{% url 'expeditions:modifier' expedition.reference %}">
+                        Modifier
+                    </a>
+                    <a class="button button-danger"
+                       href="{% url 'expeditions:supprimer' expedition.reference %}"
+                       data-delete-url="{% url 'expeditions:supprimer' expedition.reference %}"
+                       data-delete-message="Supprimer l'expédition {{ expedition.reference|escapejs }} ?">
+                        Supprimer
+                    </a>
+                </span>
+            </div>
         </li>
     {% empty %}
-        <li>Aucune expédition disponible pour le moment.</li>
+        <li class="empty-state">Aucune expédition disponible pour le moment.</li>
     {% endfor %}
 </ul>
 {% endblock %}

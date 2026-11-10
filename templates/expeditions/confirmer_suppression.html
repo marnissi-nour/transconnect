@@ -3,11 +3,15 @@
 {% block title %}Confirmer la suppression{% endblock %}
 
 {% block content %}
-<h1>Confirmer la suppression</h1>
-<p>Voulez-vous vraiment supprimer l'expédition « {{ objet }} » ?</p>
-<form method="post">
-    {% csrf_token %}
-    <button type="submit">Confirmer</button>
-</form>
-<a href="{% url 'expeditions:liste' %}">Annuler</a>
+<div class="content-card form-card danger-card">
+    <h1>Supprimer l'expédition</h1>
+    <p>Voulez-vous vraiment supprimer « {{ objet }} » ? Cette action est irréversible.</p>
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-actions">
+            <button class="button button-danger" type="submit">Confirmer la suppression</button>
+            <a class="button button-secondary" href="{% url 'expeditions:liste' %}">Annuler</a>
+        </div>
+    </form>
+</div>
 {% endblock %}

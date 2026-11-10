@@ -5,7 +5,17 @@ from . import views
 app_name = "offres"
 
 urlpatterns = [
-    path("", views.liste_offres, name="liste"),
+    path("", views.OffreListView.as_view(), name="liste"),
+    path("ajouter/", views.OffreCreateView.as_view(), name="ajouter"),
+    path(
+        "<int:pk>/modifier/",
+        views.OffreUpdateView.as_view(),
+        name="modifier",
+    ),
     path("<int:pk>/", views.detail_offre, name="detail"),
-    path("<int:pk>/supprimer/", views.supprimer_offre, name="supprimer"),
+    path(
+        "<int:pk>/supprimer/",
+        views.OffreDeleteView.as_view(),
+        name="supprimer",
+    ),
 ]

@@ -3,21 +3,69 @@
 {% block title %}Entreprises{% endblock %}
 
 {% block content %}
-<h1>Entreprises</h1>
-<ul>
+<div class="page-heading">
+    <div>
+        <h1>Entreprises partenaires</h1>
+        <p>Retrouvez les chargeurs et transporteurs de la plateforme.</p>
+    </div>
+    <a class="button" href="{% url 'entreprises:ajouter' %}">Ajouter une entreprise</a>
+</div>
+<form class="filter-panel" method="get">
+    <div class="filter-fields">
+        <div class="filter-field">
+            <label for="entreprise-search">Recherche</label>
+            <input id="entreprise-search" name="q" type="search"
+                   value="{{ filters.q }}"
+                   placeholder="Nom, matricule, adresse ou gérant">
+        </div>
+        <div class="filter-field">
+            <label for="type-entreprise">Type</label>
+            <select id="type-entreprise" name="type_entreprise">
+                <option value="">Tous les types</option>
+                {% for value, label in type_choices %}
+                    <option value="{{ value }}"
+                            {% if filters.type_entreprise == value %}selected{% endif %}>
+                        {{ label }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    <div class="filter-actions">
+        <button class="button" type="submit">Rechercher</button>
+        <a class="button button-secondary"
+           href="{% url 'entreprises:liste' %}">Réinitialiser</a>
+    </div>
+</form>
+<ul class="cards">
     {% for entreprise in entreprises %}
-        <li>
-            <a href="{% url 'entreprises:detail' entreprise.pk %}">
-                {{ entreprise.raison_social|upper }}
-            </a>
-            — {{ entreprise.get_type_entreprise_display|default:"Type non renseigné" }}
-            — créée le {{ entreprise.created_at|date:"d/m/Y" }}
-            <a href="{% url 'entreprises:supprimer' entreprise.pk %}">
-                Supprimer
-            </a>
+        <li class="card">
+            <div class="card-header">
+                <a class="card-title" href="{% url 'entreprises:detail' entreprise.pk %}">
+                    {{ entreprise.raison_social|upper }}
+                </a>
+                <span class="status status-neutral">
+                    {{ entreprise.get_type_entreprise_display|default:"Type non renseigné" }}
+                </span>
+            </div>
+            <p class="card-meta">
+                <span>Créée le {{ entreprise.created_at|date:"d/m/Y" }}</span>
+                <span>{{ entreprise.gerant.username }}</span>
+            </p>
+            <div class="card-actions">
+                <a class="button button-secondary" href="{% url 'entreprises:detail' entreprise.pk %}">Voir le détail</a>
+                <span>
+                    <a class="button button-secondary" href="{% url 'entreprises:modifier' entreprise.pk %}">Modifier</a>
+                    <a class="button button-danger" href="{% url 'entreprises:supprimer' entreprise.pk %}"
+                       data-delete-url="{% url 'entreprises:supprimer' entreprise.pk %}"
+                       data-delete-message="Supprimer {{ entreprise.raison_social|escapejs }} ?">
+                        Supprimer
+                    </a>
+                </span>
+            </div>
         </li>
     {% empty %}
-        <li>Aucune entreprise enregistrée.</li>
+        <li class="empty-state">Aucune entreprise enregistrée.</li>
     {% endfor %}
 </ul>
 {% endblock %}

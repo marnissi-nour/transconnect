@@ -1,0 +1,456 @@
+[1mdiff --git a/EntreprisesApp/urls.py b/EntreprisesApp/urls.py[m
+[1mindex cdd5f45..7f18ee7 100644[m
+[1m--- a/EntreprisesApp/urls.py[m
+[1m+++ b/EntreprisesApp/urls.py[m
+[36m@@ -5,7 +5,17 @@[m [mfrom . import views[m
+ app_name = "entreprises"[m
+ [m
+ urlpatterns = [[m
+[31m-    path("", views.liste_entreprises, name="liste"),[m
+[32m+[m[32m    path("", views.EntrepriseListView.as_view(), name="liste"),[m
+[32m+[m[32m    path("ajouter/", views.EntrepriseCreateView.as_view(), name="ajouter"),[m
+[32m+[m[32m    path([m
+[32m+[m[32m        "<int:pk>/modifier/",[m
+[32m+[m[32m        views.EntrepriseUpdateView.as_view(),[m
+[32m+[m[32m        name="modifier",[m
+[32m+[m[32m    ),[m
+     path("<int:pk>/", views.detail_entreprise, name="detail"),[m
+[31m-    path("<int:pk>/supprimer/", views.supprimer_entreprise, name="supprimer"),[m
+[32m+[m[32m    path([m
+[32m+[m[32m        "<int:pk>/supprimer/",[m
+[32m+[m[32m        views.EntrepriseDeleteView.as_view(),[m
+[32m+[m[32m        name="supprimer",[m
+[32m+[m[32m    ),[m
+ ][m
+[1mdiff --git a/EntreprisesApp/views.py b/EntreprisesApp/views.py[m
+[1mindex 78bee84..57ed647 100644[m
+[1m--- a/EntreprisesApp/views.py[m
+[1m+++ b/EntreprisesApp/views.py[m
+[36m@@ -1,20 +1,58 @@[m
+[31m-from django.http import HttpResponseRedirect[m
+[32m+[m[32mfrom django.db.models import Q[m
+ from django.shortcuts import get_object_or_404, render[m
+[31m-from django.urls import reverse[m
+[31m-from django.views.decorators.http import require_http_methods[m
+[32m+[m[32mfrom django.urls import reverse_lazy[m
+[32m+[m[32mfrom django.views.generic import CreateView, DeleteView, ListView, UpdateView[m
+ [m
+ from .models import Entreprise[m
+[32m+[m[32mfrom .forms import EntrepriseForm[m
+ [m
+ [m
+[31m-def liste_entreprises(request):[m
+[31m-    entreprises = Entreprise.objects.select_related("gerant").order_by([m
+[31m-        "raison_social"[m
+[31m-    )[m
+[31m-    return render([m
+[31m-        request,[m
+[31m-        "entreprises/liste.html",[m
+[31m-        {"entreprises": entreprises},[m
+[31m-    )[m
+[32m+[m[32mclass EntrepriseListView(ListView):[m
+[32m+[m[32m    model = Entreprise[m
+[32m+[m[32m    template_name = "entreprises/liste.html"[m
+[32m+[m[32m    context_object_name = "entreprises"[m
+[32m+[m
+[32m+[m[32m    def get_queryset(self):[m
+[32m+[m[32m        queryset = Entreprise.objects.select_related("gerant")[m
+[32m+[m[32m        search = self.request.GET.get("q", "").strip()[m
+[32m+[m[32m        type_entreprise = self.request.GET.get("type_entreprise", "").strip()[m
+[32m+[m
+[32m+[m[32m        if search:[m
+[32m+[m[32m            queryset = queryset.filter([m
+[32m+[m[32m                Q(raison_social__icontains=search)[m
+[32m+[m[32m                | Q(matricule_fiscal__icontains=search)[m
+[32m+[m[32m                | Q(adresse__icontains=search)[m
+[32m+[m[32m                | Q(gerant__username__icontains=search)[m
+[32m+[m[32m            )[m
+[32m+[m[32m        if type_entreprise:[m
+[32m+[m[32m            queryset = queryset.filter(type_entreprise=type_entreprise)[m
+[32m+[m
+[32m+[m[32m        return queryset.order_by("raison_social")[m
+[32m+[m
+[32m+[m[32m    def get_context_data(self, **kwargs):[m
+[32m+[m[32m        context = super().get_context_data(**kwargs)[m
+[32m+[m[32m        context["filters"] = {[m
+[32m+[m[32m            key: self.request.GET.get(key, "")[m
+[32m+[m[32m            for key in ("q", "type_entreprise")[m
+[32m+[m[32m        }[m
+[32m+[m[32m        context["type_choices"] = Entreprise._meta.get_field([m
+[32m+[m[32m            "type_entreprise"[m
+[32m+[m[32m        ).choices[m
+[32m+[m[32m        return context[m
+[32m+[m
+[32m+[m
+[32m+[m[32mclass EntrepriseCreateView(CreateView):[m
+[32m+[m[32m    model = Entreprise[m
+[32m+[m[32m    form_class = EntrepriseForm[m
+[32m+[m[32m    template_name = "entreprises/form.html"[m
+[32m+[m[32m    success_url = reverse_lazy("entreprises:liste")[m
+[32m+[m
+[32m+[m
+[32m+[m[32mclass EntrepriseUpdateView(UpdateView):[m
+[32m+[m[32m    model = Entreprise[m
+[32m+[m[32m    form_class = EntrepriseForm[m
+[32m+[m[32m    template_name = "entreprises/form.html"[m
+[32m+[m[32m    success_url = reverse_lazy("entreprises:liste")[m
+ [m
+ [m
+ def detail_entreprise(request, pk):[m
+[36m@@ -28,14 +66,8 @@[m [mdef detail_entreprise(request, pk):[m
+     )[m
+ [m
+ [m
+[31m-@require_http_methods(["GET", "POST"])[m
+[31m-def supprimer_entreprise(request, pk):[m
+[31m-    entreprise = get_object_or_404(Entreprise, pk=pk)[m
+[31m-    if request.method == "POST":[m
+[31m-        entreprise.delete()[m
+[31m-        return HttpResponseRedirect(reverse("entreprises:liste"))[m
+[31m-    return render([m
+[31m-        request,[m
+[31m-        "entreprises/confirmer_suppression.html",[m
+[31m-        {"objet": entreprise},[m
+[31m-    )[m
+[32m+[m[32mclass EntrepriseDeleteView(DeleteView):[m
+[32m+[m[32m    model = Entreprise[m
+[32m+[m[32m    template_name = "entreprises/confirmer_suppression.html"[m
+[32m+[m[32m    context_object_name = "objet"[m
+[32m+[m[32m    success_url = reverse_lazy("entreprises:liste")[m
+[1mdiff --git a/ExpeditionsApp/urls.py b/ExpeditionsApp/urls.py[m
+[1mindex 26ba4fb..91ec08b 100644[m
+[1m--- a/ExpeditionsApp/urls.py[m
+[1m+++ b/ExpeditionsApp/urls.py[m
+[36m@@ -5,11 +5,17 @@[m [mfrom . import views[m
+ app_name = "expeditions"[m
+ [m
+ urlpatterns = [[m
+[31m-    path("", views.liste_expeditions, name="liste"),[m
+[31m-    path("<str:reference>/", views.detail_expedition, name="detail"),[m
+[32m+[m[32m    path("", views.ExpeditionListView.as_view(), name="liste"),[m
+[32m+[m[32m    path("ajouter/", views.ExpeditionCreateView.as_view(), name="ajouter"),[m
+[32m+[m[32m    path([m
+[32m+[m[32m        "<str:reference>/modifier/",[m
+[32m+[m[32m        views.ExpeditionUpdateView.as_view(),[m
+[32m+[m[32m        name="modifier",[m
+[32m+[m[32m    ),[m
+[32m+[m[32m    path("<str:reference>/", views.ExpeditionDetailView.as_view(), name="detail"),[m
+     path([m
+         "<str:reference>/supprimer/",[m
+[31m-        views.supprimer_expedition,[m
+[32m+[m[32m        views.ExpeditionDeleteView.as_view(),[m
+         name="supprimer",[m
+     ),[m
+ ][m
+\ No newline at end of file[m
+[1mdiff --git a/ExpeditionsApp/views.py b/ExpeditionsApp/views.py[m
+[1mindex a287a24..c6798c3 100644[m
+[1m--- a/ExpeditionsApp/views.py[m
+[1m+++ b/ExpeditionsApp/views.py[m
+[36m@@ -1,23 +1,78 @@[m
+[31m-from django.http import HttpResponseRedirect[m
+[32m+[m[32mfrom django.db.models import Q[m
+ from django.shortcuts import get_object_or_404, render[m
+[31m-from django.urls import reverse[m
+[31m-from django.views.decorators.http import require_http_methods[m
+[32m+[m[32mfrom django.urls import reverse_lazy[m
+[32m+[m[32mfrom django.views.generic import ([m
+[32m+[m[32m    CreateView,[m
+[32m+[m[32m    DeleteView,[m
+[32m+[m[32m    DetailView,[m
+[32m+[m[32m    ListView,[m
+[32m+[m[32m    UpdateView,[m
+[32m+[m[32m)[m
+ [m
+ from .models import Expedition[m
+[32m+[m[32mfrom .forms import ExpeditionForm[m
+ [m
+ [m
+[31m-def liste_expeditions(request):[m
+[31m-    expeditions = ([m
+[31m-        Expedition.objects.filter(statut="publiee")[m
+[31m-        .select_related("entreprise")[m
+[31m-        .order_by("-created_at")[m
+[31m-    )[m
+[31m-    return render([m
+[31m-        request,[m
+[31m-        "expeditions/liste.html",[m
+[31m-        {"expeditions": expeditions},[m
+[31m-    )[m
+[32m+[m[32mclass ExpeditionListView(ListView):[m
+[32m+[m[32m    model = Expedition[m
+[32m+[m[32m    template_name = "expeditions/liste.html"[m
+[32m+[m[32m    context_object_name = "expeditions"[m
+[32m+[m
+[32m+[m[32m    def get_queryset(self):[m
+[32m+[m[32m        queryset = Expedition.objects.select_related("entreprise")[m
+[32m+[m[32m        search = self.request.GET.get("q", "").strip()[m
+[32m+[m[32m        statut = self.request.GET.get("statut", "").strip()[m
+[32m+[m[32m        depart = self.request.GET.get("depart", "").strip()[m
+[32m+[m[32m        arrivee = self.request.GET.get("arrivee", "").strip()[m
+[32m+[m
+[32m+[m[32m        if search:[m
+[32m+[m[32m            queryset = queryset.filter([m
+[32m+[m[32m                Q(reference__icontains=search)[m
+[32m+[m[32m                | Q(ville_depart__icontains=search)[m
+[32m+[m[32m                | Q(ville_arrive__icontains=search)[m
+[32m+[m[32m                | Q(description__icontains=search)[m
+[32m+[m[32m            )[m
+[32m+[m[32m        if statut:[m
+[32m+[m[32m            queryset = queryset.filter(statut=statut)[m
+[32m+[m[32m        if depart:[m
+[32m+[m[32m            queryset = queryset.filter(ville_depart__icontains=depart)[m
+[32m+[m[32m        if arrivee:[m
+[32m+[m[32m            queryset = queryset.filter(ville_arrive__icontains=arrivee)[m
+[32m+[m
+[32m+[m[32m        return queryset.order_by("-created_at")[m
+[32m+[m
+[32m+[m[32m    def get_context_data(self, **kwargs):[m
+[32m+[m[32m        context = super().get_context_data(**kwargs)[m
+[32m+[m[32m        context["filters"] = {[m
+[32m+[m[32m            "q": self.request.GET.get("q", ""),[m
+[32m+[m[32m            "statut": self.request.GET.get("statut", ""),[m
+[32m+[m[32m            "depart": self.request.GET.get("depart", ""),[m
+[32m+[m[32m            "arrivee": self.request.GET.get("arrivee", ""),[m
+[32m+[m[32m        }[m
+[32m+[m[32m        context["statut_choices"] = Expedition._meta.get_field([m
+[32m+[m[32m            "statut"[m
+[32m+[m[32m        ).choices[m
+[32m+[m[32m        return context[m
+[32m+[m
+[32m+[m
+[32m+[m[32mclass ExpeditionCreateView(CreateView):[m
+[32m+[m[32m    model = Expedition[m
+[32m+[m[32m    form_class = ExpeditionForm[m
+[32m+[m[32m    template_name = "expeditions/form.html"[m
+[32m+[m[32m    success_url = reverse_lazy("expeditions:liste")[m
+[32m+[m
+ [m
+[32m+[m[32mclass ExpeditionUpdateView(UpdateView):[m
+[32m+[m[32m    model = Expedition[m
+[32m+[m[32m    form_class = ExpeditionForm[m
+[32m+[m[32m    template_name = "expeditions/form.html"[m
+[32m+[m[32m    slug_field = "reference"[m
+[32m+[m[32m    slug_url_kwarg = "reference"[m
+[32m+[m[32m    success_url = reverse_lazy("expeditions:liste")[m
+[32m+[m
+[32m+[m
+[32m+[m[32m"""[m
+[32m+[m[32mPrevious function-based implementation:[m
+ [m
+ def detail_expedition(request, reference):[m
+     expedition = get_object_or_404([m
+[36m@@ -33,16 +88,37 @@[m [mdef detail_expedition(request, reference):[m
+         "expeditions/detail.html",[m
+         {"expedition": expedition, "offres": offres},[m
+     )[m
+[32m+[m[32m"""[m
+ [m
+ [m
+[31m-@require_http_methods(["GET", "POST"])[m
+[31m-def supprimer_expedition(request, reference):[m
+[31m-    expedition = get_object_or_404(Expedition, reference=reference)[m
+[31m-    if request.method == "POST":[m
+[31m-        expedition.delete()[m
+[31m-        return HttpResponseRedirect(reverse("expeditions:liste"))[m
+[31m-    return render([m
+[31m-        request,[m
+[31m-        "expeditions/confirmer_suppression.html",[m
+[31m-        {"objet": expedition, "type_objet": "l'expédition"},[m
+[31m-    )[m
+[32m+[m[32mclass ExpeditionDetailView(DetailView):[m
+[32m+[m[32m    model = Expedition[m
+[32m+[m[32m    template_name = "expeditions/detail.html"[m
+[32m+[m[32m    context_object_name = "expedition"[m
+[32m+[m[32m    slug_field = "reference"[m
+[32m+[m[32m    slug_url_kwarg = "reference"[m
+[32m+[m
+[32m+[m[32m    def get_queryset(self):[m
+[32m+[m[32m        return Expedition.objects.select_related("entreprise")[m
+[32m+[m
+[32m+[m[32m    def get_context_data(self, **kwargs):[m
+[32m+[m[32m        context = super().get_context_data(**kwargs)[m
+[32m+[m[32m        context["offres"] = self.object.offres.select_related([m
+[32m+[m[32m            "transporteur",[m
+[32m+[m[32m            "vehicule",[m
+[32m+[m[32m        ).order_by("-date_proposition")[m
+[32m+[m[32m        return context[m
+[32m+[m
+[32m+[m
+[32m+[m[32mclass ExpeditionDeleteView(DeleteView):[m
+[32m+[m[32m    model = Expedition[m
+[32m+[m[32m    template_name = "expeditions/confirmer_suppression.html"[m
+[32m+[m[32m    context_object_name = "objet"[m
+[32m+[m[32m    slug_field = "reference"[m
+[32m+[m[32m    slug_url_kwarg = "reference"[m
+[32m+[m[32m    success_url = reverse_lazy("expeditions:liste")[m
+[32m+[m
+[32m+[m[32m    def get_context_data(self, **kwargs):[m
+[32m+[m[32m        context = super().get_context_data(**kwargs)[m
+[32m+[m[32m        context["type_objet"] = "l'expédition"[m
+[32m+[m[32m        return context[m
+[1mdiff --git a/OffersApp/urls.py b/OffersApp/urls.py[m
+[1mindex 73029cc..e5c059a 100644[m
+[1m--- a/OffersApp/urls.py[m
+[1m+++ b/OffersApp/urls.py[m
+[36m@@ -5,7 +5,17 @@[m [mfrom . import views[m
+ app_name = "offres"[m
+ [m
+ urlpatterns = [[m
+[31m-    path("", views.liste_offres, name="liste"),[m
+[32m+[m[32m    path("", views.OffreListView.as_view(), name="liste"),[m
+[32m+[m[32m    path("ajouter/", views.OffreCreateView.as_view(), name="ajouter"),[m
+[32m+[m[32m    path([m
+[32m+[m[32m        "<int:pk>/modifier/",[m
+[32m+[m[32m        views.OffreUpdateView.as_view(),[m
+[32m+[m[32m        name="modifier",[m
+[32m+[m[32m    ),[m
+     path("<int:pk>/", views.detail_offre, name="detail"),[m
+[31m-    path("<int:pk>/supprimer/", views.supprimer_offre, name="supprimer"),[m
+[32m+[m[32m    path([m
+[32m+[m[32m        "<int:pk>/supprimer/",[m
+[32m+[m[32m        views.OffreDeleteView.as_view(),[m
+[32m+[m[32m        name="supprimer",[m
+[32m+[m[32m    ),[m
+ ][m
+[1mdiff --git a/OffersApp/views.py b/OffersApp/views.py[m
+[1mindex d54afc1..f393811 100644[m
+[1m--- a/OffersApp/views.py[m
+[1m+++ b/OffersApp/views.py[m
+[36m@@ -1,16 +1,64 @@[m
+[31m-from django.http import HttpResponseRedirect[m
+[32m+[m[32mfrom django.db.models import Q[m
+ from django.shortcuts import get_object_or_404, render[m
+[31m-from django.urls import reverse[m
+[31m-from django.views.decorators.http import require_http_methods[m
+[32m+[m[32mfrom django.urls import reverse_lazy[m
+[32m+[m[32mfrom django.views.generic import CreateView, DeleteView, ListView, UpdateView[m
+ [m
+ from .models import Offre[m
+[32m+[m[32mfrom .forms import OffreForm[m
+ [m
+ [m
+[31m-def liste_offres(request):[m
+[31m-    offres = Offre.objects.select_related([m
+[31m-        "transporteur", "expedition", "vehicule"[m
+[31m-    ).order_by("-date_proposition")[m
+[31m-    return render(request, "offres/liste.html", {"offres": offres})[m
+[32m+[m[32mclass OffreListView(ListView):[m
+[32m+[m[32m    model = Offre[m
+[32m+[m[32m    template_name = "offres/liste.html"[m
+[32m+[m[32m    context_object_name = "offres"[m
+[32m+[m
+[32m+[m[32m    def get_queryset(self):[m
+[32m+[m[32m        queryset = Offre.objects.select_related([m
+[32m+[m[32m            "transporteur", "expedition", "vehicule"[m
+[32m+[m[32m        )[m
+[32m+[m[32m        search = self.request.GET.get("q", "").strip()[m
+[32m+[m[32m        statut = self.request.GET.get("statut", "").strip()[m
+[32m+[m[32m        transporteur = self.request.GET.get("transporteur", "").strip()[m
+[32m+[m
+[32m+[m[32m        if search:[m
+[32m+[m[32m            queryset = queryset.filter([m
+[32m+[m[32m                Q(transporteur__raison_social__icontains=search)[m
+[32m+[m[32m                | Q(expedition__reference__icontains=search)[m
+[32m+[m[32m                | Q(vehicule__immatriculation__icontains=search)[m
+[32m+[m[32m            )[m
+[32m+[m[32m        if statut:[m
+[32m+[m[32m            queryset = queryset.filter(statut=statut)[m
+[32m+[m[32m        if transporteur:[m
+[32m+[m[32m            queryset = queryset.filter([m
+[32m+[m[32m                transporteur__raison_social__icontains=transporteur[m
+[32m+[m[32m            )[m
+[32m+[m
+[32m+[m[32m        return queryset.order_by("-date_proposition")[m
+[32m+[m
+[32m+[m[32m    def get_context_data(self, **kwargs):[m
+[32m+[m[32m        context = super().get_context_data(**kwargs)[m
+[32m+[m[32m        context["filters"] = {[m
+[32m+[m[32m            key: self.request.GET.get(key, "")[m
+[32m+[m[32m            for key in ("q", "statut", "transporteur")[m
+[32m+[m[32m        }[m
+[32m+[m[32m        context["statut_choices"] = Offre._meta.get_field([m
+[32m+[m[32m            "statut"[m
+[32m+[m[32m        ).choices[m
+[32m+[m[32m        return context[m
+[32m+[m
+[32m+[m
+[32m+[m[32mclass OffreCreateView(CreateView):[m
+[32m+[m[32m    model = Offre[m
+[32m+[m[32m    form_class = OffreForm[m
+[32m+[m[32m    template_name = "offres/form.html"[m
+[32m+[m[32m    success_url = reverse_lazy("offres:liste")[m
+[32m+[m
+[32m+[m
+[32m+[m[32mclass OffreUpdateView(UpdateView):[m
+[32m+[m[32m    model = Offre[m
+[32m+[m[32m    form_class = OffreForm[m
+[32m+[m[32m    template_name = "offres/form.html"[m
+[32m+[m[32m    success_url = reverse_lazy("offres:liste")[m
+ [m
+ [m
+ def detail_offre(request, pk):[m
+[36m@@ -23,14 +71,8 @@[m [mdef detail_offre(request, pk):[m
+     return render(request, "offres/detail.html", {"offre": offre})[m
+ [m
+ [m
+[31m-@require_http_methods(["GET", "POST"])[m
+[31m-def supprimer_offre(request, pk):[m
+[31m-    offre = get_object_or_404(Offre, pk=pk)[m
+[31m-    if request.method == "POST":[m
+[31m-        offre.delete()[m
+[31m-        return HttpResponseRedirect(reverse("offres:liste"))[m
+[31m-    return render([m
+[31m-        request,[m
+[31m-        "offres/confirmer_suppression.html",[m
+[31m-        {"objet": offre},[m
+[31m-    )[m
+[32m+[m[32mclass OffreDeleteView(DeleteView):[m
+[32m+[m[32m    model = Offre[m
+[32m+[m[32m    template_name = "offres/confirmer_suppression.html"[m
+[32m+[m[32m    context_object_name = "objet"[m
+[32m+[m[32m    success_url = reverse_lazy("offres:liste")[m
+[1mdiff --git a/VehiculesApp/urls.py b/VehiculesApp/urls.py[m
+[1mindex 0ce6ef0..1b9f657 100644[m
+[1m--- a/VehiculesApp/urls.py[m
+[1m+++ b/VehiculesApp/urls.py[m
+[36m@@ -5,7 +5,13 @@[m [mfrom . import views[m
+ app_name = "vehicules"[m
+ [m
+ urlpatterns = [[m
+[31m-    path("", views.liste_vehicules, name="liste"),[m
+[32m+[m[32m    path("", views.VehiculeListView.as_view(), name="liste"),[m
+[32m+[m[32m    path("ajouter/", views.VehiculeCreateView.as_view(), name="ajouter"),[m
+[32m+[m[32m    path("<int:pk>/modifier/", views.VehiculeUpdateView.as_view(), name="modifier"),[m
+     path("<int:pk>/", views.detail_vehicule, name="detail"),[m
+[31m-    path("<int:pk>/supprimer/", views.supprimer_vehicule, name="supprimer"),[m
+[32m+[m[32m    path([m
+[32m+[m[32m        "<int:pk>/supprimer/",[m
+[32m+[m[32m        views.VehiculeDeleteView.as_view(),[m
+[32m+[m[32m        name="supprimer",[m
+[32m+[m[32m    ),[m
+ ][m
+[1mdiff --git a/VehiculesApp/views.py b/VehiculesApp/views.py[m
+[1mindex 2ebe30b..3fa2551 100644[m
+[1m--- a/VehiculesApp/views.py[m
+[1m+++ b/VehiculesApp/views.py[m
+[36m@@ -1,17 +1,69 @@[m
+[31m-from django.http import HttpResponseRedirect[m
+[32m+[m[32mfrom django.db.models import Q[m
+ from django.shortcuts import get_object_or_404, render[m
+[31m-from django.urls import reverse[m
+[31m-from django.views.decorators.http import require_http_methods[m
+[32m+[m[32mfrom django.urls import reverse_lazy[m
+[32m+[m[32mfrom django.views.generic import CreateView, DeleteView, ListView, UpdateView[m
+[32m+[m
+[32m+[m[32mfrom VehiculesApp.forms import VehiculeForm[m
+ [m
+ from .models import Vehicule[m
+ [m
+ [m
+[31m-def liste_vehicules(request):[m
+[31m-    vehicules = Vehicule.objects.select_related("entreprise").order_by([m
+[31m-        "-created_at"[m
+[31m-    )[m
+[31m-    return render(request, "vehicules/liste.html", {"vehicules": vehicules})[m
+[32m+[m[32mclass VehiculeListView(ListView)

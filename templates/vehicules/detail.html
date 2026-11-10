@@ -3,13 +3,27 @@
 {% block title %}{{ vehicule.immatriculation }}{% endblock %}
 
 {% block content %}
-<h1>{{ vehicule.immatriculation|upper }}</h1>
-<table>
-    <tr><th>Type</th><td>{{ vehicule.get_type_vehicule_display|default:"Non renseigné" }}</td></tr>
-    <tr><th>Capacité</th><td>{{ vehicule.capacite_kg|floatformat:0 }} kg</td></tr>
-    <tr><th>Disponibilité</th><td>{% if vehicule.disponible %}Disponible{% else %}Indisponible{% endif %}</td></tr>
-    <tr><th>Entreprise</th><td>{{ vehicule.entreprise.raison_social|default:"Non renseignée" }}</td></tr>
-</table>
-<a href="{% url 'vehicules:supprimer' vehicule.pk %}">Supprimer</a>
-<a href="{% url 'vehicules:liste' %}">Retour aux véhicules</a>
+<div class="page-heading">
+    <div>
+        <h1>{{ vehicule.immatriculation|upper }}</h1>
+        <p>Fiche du véhicule et informations de disponibilité.</p>
+    </div>
+</div>
+<div class="content-card">
+    <dl class="detail-grid">
+        <div class="detail-item"><dt>Type</dt><dd>{{ vehicule.get_type_vehicule_display|default:"Non renseigné" }}</dd></div>
+        <div class="detail-item"><dt>Capacité</dt><dd>{{ vehicule.capacite_kg|floatformat:0 }} kg</dd></div>
+        <div class="detail-item"><dt>Disponibilité</dt><dd>{{ vehicule.disponible|yesno:"Disponible,Indisponible" }}</dd></div>
+        <div class="detail-item"><dt>Entreprise</dt><dd>{{ vehicule.entreprise.raison_social|default:"Non renseignée" }}</dd></div>
+    </dl>
+    <div class="page-actions">
+        <a class="button" href="{% url 'vehicules:modifier' vehicule.pk %}">Modifier</a>
+        <a class="button button-danger" href="{% url 'vehicules:supprimer' vehicule.pk %}"
+           data-delete-url="{% url 'vehicules:supprimer' vehicule.pk %}"
+           data-delete-message="Supprimer le véhicule {{ vehicule.immatriculation|escapejs }} ?">
+            Supprimer
+        </a>
+        <a class="button button-secondary" href="{% url 'vehicules:liste' %}">Retour</a>
+    </div>
+</div>
 {% endblock %}

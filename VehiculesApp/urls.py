@@ -5,7 +5,13 @@ from . import views
 app_name = "vehicules"
 
 urlpatterns = [
-    path("", views.liste_vehicules, name="liste"),
+    path("", views.VehiculeListView.as_view(), name="liste"),
+    path("ajouter/", views.VehiculeCreateView.as_view(), name="ajouter"),
+    path("<int:pk>/modifier/", views.VehiculeUpdateView.as_view(), name="modifier"),
     path("<int:pk>/", views.detail_vehicule, name="detail"),
-    path("<int:pk>/supprimer/", views.supprimer_vehicule, name="supprimer"),
+    path(
+        "<int:pk>/supprimer/",
+        views.VehiculeDeleteView.as_view(),
+        name="supprimer",
+    ),
 ]
