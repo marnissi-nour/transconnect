@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}Ajouter un événement{% endblock %}
+
+{% block content %}
+<div class="page-heading">
+    <div>
+        <h1>Ajouter un événement de suivi</h1>
+        <p>{{ expedition.reference }}</p>
+    </div>
+</div>
+<div class="content-card">
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <div class="page-actions">
+            <button class="button" type="submit">Enregistrer</button>
+            <a class="button button-secondary"
+               href="{% url 'expeditions:detail' expedition.reference %}">
+                Annuler
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

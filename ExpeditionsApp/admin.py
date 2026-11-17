@@ -4,7 +4,20 @@ from django.core.exceptions import ValidationError
 from django.utils import timezone
 from django.utils.html import format_html
 
-from .models import Expedition
+from .models import Expedition, ExpeditionEvenement, ExpeditionStatutHistorique
+
+
+class ExpeditionStatutHistoriqueInline(admin.TabularInline):
+    model = ExpeditionStatutHistorique
+    extra = 0
+    can_delete = False
+    readonly_fields = ("ancien_statut", "nouveau_statut", "changed_by", "changed_at")
+
+
+class ExpeditionEvenementInline(admin.TabularInline):
+    model = ExpeditionEvenement
+    extra = 0
+    readonly_fields = ("created_by", "created_at")
 
 
 class EnRetard(admin.SimpleListFilter):
@@ -32,6 +45,7 @@ class EnRetard(admin.SimpleListFilter):
 
 @admin.register(Expedition)
 class ExpeditionAdmin(admin.ModelAdmin):
+    inlines = (ExpeditionStatutHistoriqueInline, ExpeditionEvenementInline)
 
     list_display = (
         'reference',

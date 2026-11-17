@@ -152,6 +152,7 @@ class Offre(models.Model):
 
     def save(self, *args, **kwargs):
         with transaction.atomic():
+            est_nouvelle = self._state.adding
             ancien_statut = None
 
             if self.pk:
@@ -163,6 +164,19 @@ class Offre(models.Model):
 
             self.full_clean()
             super().save(*args, **kwargs)
+
+            if est_nouvelle and self.statut == "proposee":
+                from NotificationsApp.models import Notification
+
+                gerant = self.expedition.entreprise.gerant
+                Notification.objects.create(
+                    destinataire=gerant,
+                    offre=self,
+                    message=(
+                        f"Une nouvelle offre a été reçue pour "
+                        f"l'expédition {self.expedition.reference}."
+                    ),
+                )
 
             # Règle 5 : cascade lors de l'acceptation.
             if (

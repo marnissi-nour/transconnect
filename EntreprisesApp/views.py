@@ -14,6 +14,7 @@ class EntrepriseListView(LoginRequiredMixin, ListView):
     model = Entreprise
     template_name = "entreprises/liste.html"
     context_object_name = "entreprises"
+    paginate_by = 10
 
     def get_queryset(self):
         queryset = Entreprise.objects.select_related("gerant")

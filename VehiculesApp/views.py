@@ -16,6 +16,7 @@ class VehiculeListView(LoginRequiredMixin, RoleRequiredMixin, ListView):
     model = Vehicule
     template_name = "vehicules/liste.html"
     context_object_name = "vehicules"
+    paginate_by = 10
 
     def get_queryset(self):
         queryset = Vehicule.objects.select_related("entreprise")

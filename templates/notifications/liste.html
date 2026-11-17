@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}Notifications{% endblock %}
+
+{% block content %}
+<div class="page-heading">
+    <div>
+        <h1>Notifications</h1>
+        <p>Les nouvelles offres reçues pour vos expéditions.</p>
+    </div>
+    {% if unread_notifications_count %}
+        <form method="post" action="{% url 'notifications:lire_tout' %}">
+            {% csrf_token %}
+            <button class="button button-secondary" type="submit">
+                Tout marquer comme lu
+            </button>
+        </form>
+    {% endif %}
+</div>
+<div class="content-card">
+    <div class="table-wrapper">
+        <table>
+            <tr>
+                <th>Notification</th>
+                <th>Date</th>
+                <th>État</th>
+                <th>Action</th>
+            </tr>
+            {% for notification in notifications %}
+                <tr>
+                    <td>
+                        <a href="{% url 'expeditions:detail' notification.offre.expedition.reference %}">
+                            {{ notification.message }}
+                        </a>
+                    </td>
+                    <td>{{ notification.created_at|date:"d/m/Y H:i" }}</td>
+                    <td>{% if notification.lue %}Lue{% else %}Non lue{% endif %}</td>
+                    <td>
+                        {% if not notification.lue %}
+                            <form method="post"
+                                  action="{% url 'notifications:lire' notification.pk %}">
+                                {% csrf_token %}
+                                <button class="button button-secondary" type="submit">
+                                    Marquer comme lue
+                                </button>
+                            </form>
+                        {% else %}
+                            —
+                        {% endif %}
+                    </td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="4">Aucune notification.</td></tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>
+{% endblock %}

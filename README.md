@@ -32,6 +32,9 @@ TransConnect centralise les échanges liés au transport de marchandises :
 4. Le chargeur consulte les offres et peut en accepter une.
 5. L'expédition passe automatiquement à l'état attribué lorsque l'offre est
    acceptée.
+6. Les changements de statut sont conservés dans un historique horodaté.
+7. Le chargeur est informé des nouvelles offres depuis sa boîte de
+   notifications.
 
 L'interface est en français et possède une identité visuelle B2B responsive,
 avec un mode clair/sombre, une navigation adaptée aux petits écrans et des
@@ -72,6 +75,8 @@ illustrations SVG intégrées aux templates.
   - Annulée
 - Isolation des données : un chargeur ne voit que les expéditions de son
   entreprise, sauf l'administrateur.
+- Historique des statuts consultable depuis le détail d'une expédition.
+- Recherche par ville, statut et plage de poids.
 
 ### Gestion des véhicules
 
@@ -91,6 +96,8 @@ illustrations SVG intégrées aux templates.
 - Acceptation d'une offre :
   - l'expédition devient `attribuée` ;
   - les autres offres proposées deviennent `refusées`.
+- Notification persistante du gérant chargeur lors de la création d'une
+  nouvelle offre, avec marquage comme lue.
 
 ### Interface et expérience utilisateur
 
@@ -103,6 +110,9 @@ illustrations SVG intégrées aux templates.
 - Illustrations et icônes SVG sans dépendance externe.
 - Formulaires avec affichage/masquage du mot de passe.
 - Confirmation avant suppression.
+- Pagination des listes d'expéditions, d'offres, de véhicules et
+  d'entreprises.
+- Suivi de livraison avec événements horodatés, type, description et auteur.
 
 ## Rôles et droits
 
@@ -179,7 +189,21 @@ git clone <url-du-depot>
 cd transconnect
 ```
 
-### Créer l'environnement virtuel
+### Installer les dépendances
+
+Le projet déclare ses dépendances dans `pyproject.toml` et les versions
+résolues sont conservées dans `uv.lock`. Avec
+[uv](https://docs.astral.sh/uv/) installé, créer l'environnement virtuel et
+installer les dépendances avec :
+
+```powershell
+uv sync
+```
+
+Cette commande utilise la version de Python indiquée dans `.python-version`.
+
+Sans uv, créer l'environnement virtuel puis installer les dépendances
+principales manuellement :
 
 ```powershell
 py -m venv .venv
@@ -198,16 +222,9 @@ l'interpréteur de l'environnement :
 .\.venv\Scripts\python.exe manage.py check
 ```
 
-### Installer Django
-
-Le projet utilise Django 5.2.17 :
-
 ```powershell
-python -m pip install "Django==5.2.17"
+python -m pip install "Django==5.2.*" "python-dotenv>=1.2.3"
 ```
-
-Pour une installation reproductible, ajouter les dépendances du projet à un
-futur fichier `requirements.txt`.
 
 ## Configuration
 
@@ -311,12 +328,17 @@ transconnect/
 │   ├── views.py
 │   └── migrations/
 ├── ExpeditionsApp/
-│   ├── models.py              # Expéditions et statuts
+│   ├── models.py              # Expéditions, statuts et suivi
 │   ├── urls.py
 │   ├── views.py
 │   └── migrations/
 ├── OffersApp/
 │   ├── models.py              # Offres et règles d'acceptation
+│   ├── urls.py
+│   ├── views.py
+│   └── migrations/
+├── NotificationsApp/
+│   ├── models.py              # Notifications de nouvelles offres
 │   ├── urls.py
 │   ├── views.py
 │   └── migrations/
@@ -348,6 +370,7 @@ transconnect/
 | `/Expeditions/` | Gestion des expéditions |
 | `/Vehicules/` | Gestion des véhicules |
 | `/Offres/` | Gestion des offres |
+| `/Notifications/` | Notifications et nouvelles offres |
 | `/Entreprises/` | Gestion des entreprises |
 | `/admin/` | Administration Django |
 
@@ -407,7 +430,6 @@ paramètres SMTP adaptés à l'environnement de déploiement.
 
 ## Améliorations possibles
 
-- Ajouter un fichier `requirements.txt` ou `pyproject.toml`.
 - Ajouter des tests permanents pour les droits, les poids et l'acceptation des
   offres.
 - Ajouter un historique des changements de statut.

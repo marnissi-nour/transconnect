@@ -1,5 +1,7 @@
 from django.db.models import Q
-from django.shortcuts import get_object_or_404, render
+from decimal import Decimal, InvalidOperation
+
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.views.generic import (
     CreateView,
@@ -9,16 +11,18 @@ from django.views.generic import (
     UpdateView,
 )
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required
 from config.access import RoleRequiredMixin, is_admin, user_entreprise
 
 from .models import Expedition
-from .forms import ExpeditionForm
+from .forms import ExpeditionEvenementForm, ExpeditionForm
 
 
 class ExpeditionListView(LoginRequiredMixin, ListView):
     model = Expedition
     template_name = "expeditions/liste.html"
     context_object_name = "expeditions"
+    paginate_by = 10
 
     def get_queryset(self):
         queryset = Expedition.objects.select_related("entreprise")
@@ -27,7 +31,9 @@ class ExpeditionListView(LoginRequiredMixin, ListView):
             if self.request.user.role == "chargeur":
                 queryset = queryset.filter(entreprise=entreprise) if entreprise else queryset.none()
             else:
-                queryset = queryset.filter(statut="publiee")
+                queryset = queryset.filter(
+                    Q(statut="publiee") | Q(offres__transporteur=entreprise)
+                ).distinct() if entreprise else queryset.none()
         search = self.request.GET.get("q", "").strip()
         statut = self.request.GET.get("statut", "").strip()
         depart = self.request.GET.get("depart", "").strip()
@@ -46,6 +52,18 @@ class ExpeditionListView(LoginRequiredMixin, ListView):
             queryset = queryset.filter(ville_depart__icontains=depart)
         if arrivee:
             queryset = queryset.filter(ville_arrive__icontains=arrivee)
+        poids_min = self.request.GET.get("poids_min", "").strip()
+        poids_max = self.request.GET.get("poids_max", "").strip()
+        try:
+            if poids_min:
+                queryset = queryset.filter(poids_kg__gte=Decimal(poids_min))
+        except InvalidOperation:
+            pass
+        try:
+            if poids_max:
+                queryset = queryset.filter(poids_kg__lte=Decimal(poids_max))
+        except InvalidOperation:
+            pass
 
         return queryset.order_by("-created_at")
 
@@ -56,6 +74,8 @@ class ExpeditionListView(LoginRequiredMixin, ListView):
             "statut": self.request.GET.get("statut", ""),
             "depart": self.request.GET.get("depart", ""),
             "arrivee": self.request.GET.get("arrivee", ""),
+            "poids_min": self.request.GET.get("poids_min", ""),
+            "poids_max": self.request.GET.get("poids_max", ""),
         }
         context["statut_choices"] = Expedition._meta.get_field(
             "statut"
@@ -74,6 +94,10 @@ class ExpeditionCreateView(LoginRequiredMixin, RoleRequiredMixin, CreateView):
         kwargs = super().get_form_kwargs()
         kwargs["user"] = self.request.user
         return kwargs
+
+    def form_valid(self, form):
+        form.instance._status_changed_by = self.request.user
+        return super().form_valid(form)
 
 
 class ExpeditionUpdateView(LoginRequiredMixin, RoleRequiredMixin, UpdateView):
@@ -96,6 +120,10 @@ class ExpeditionUpdateView(LoginRequiredMixin, RoleRequiredMixin, UpdateView):
         kwargs = super().get_form_kwargs()
         kwargs["user"] = self.request.user
         return kwargs
+
+    def form_valid(self, form):
+        form.instance._status_changed_by = self.request.user
+        return super().form_valid(form)
 
 
 """
@@ -129,10 +157,12 @@ class ExpeditionDetailView(LoginRequiredMixin, DetailView):
         queryset = Expedition.objects.select_related("entreprise")
         if is_admin(self.request.user):
             return queryset
+        entreprise = user_entreprise(self.request.user)
         if self.request.user.role == "chargeur":
-            entreprise = user_entreprise(self.request.user)
             return queryset.filter(entreprise=entreprise) if entreprise else queryset.none()
-        return queryset.filter(statut="publiee")
+        return queryset.filter(
+            Q(statut="publiee") | Q(offres__transporteur=entreprise)
+        ).distinct() if entreprise else queryset.none()
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -140,7 +170,43 @@ class ExpeditionDetailView(LoginRequiredMixin, DetailView):
             "transporteur",
             "vehicule",
         ).order_by("-date_proposition")
+        context["evenements"] = self.object.evenements_suivi.select_related(
+            "created_by"
+        )
+        context["evenement_form"] = ExpeditionEvenementForm()
         return context
+
+
+@login_required
+def ajouter_evenement(request, reference):
+    queryset = Expedition.objects.all()
+    if not is_admin(request.user):
+        entreprise = user_entreprise(request.user)
+        if request.user.role == "chargeur":
+            queryset = queryset.filter(entreprise=entreprise)
+        elif request.user.role == "transporteur":
+            queryset = queryset.filter(
+                offres__transporteur=entreprise
+            )
+        else:
+            queryset = queryset.none()
+
+    expedition = get_object_or_404(queryset, reference=reference)
+    if request.method == "POST":
+        form = ExpeditionEvenementForm(request.POST)
+        if form.is_valid():
+            evenement = form.save(commit=False)
+            evenement.expedition = expedition
+            evenement.created_by = request.user
+            evenement.save()
+            return redirect("expeditions:detail", reference=reference)
+    else:
+        form = ExpeditionEvenementForm()
+    return render(
+        request,
+        "expeditions/evenement_form.html",
+        {"expedition": expedition, "form": form},
+    )
 
 
 class ExpeditionDeleteView(LoginRequiredMixin, RoleRequiredMixin, DeleteView):

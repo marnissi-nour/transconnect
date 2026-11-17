@@ -52,4 +52,56 @@
         </table>
     </div>
 </div>
+<div class="content-card section-card">
+    <h2>Historique des statuts</h2>
+    <div class="table-wrapper">
+        <table>
+            <tr>
+                <th>Date</th><th>Changement</th><th>Utilisateur</th>
+            </tr>
+            {% for changement in expedition.historique_statuts.all %}
+                <tr>
+                    <td>{{ changement.changed_at|date:"d/m/Y H:i" }}</td>
+                    <td>
+                        {{ changement.ancien_statut_libelle }}
+                        → {{ changement.nouveau_statut_libelle }}
+                    </td>
+                    <td>{{ changement.changed_by|default:"Système" }}</td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="3">Aucun changement enregistré.</td></tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>
+<div class="content-card section-card">
+    <div class="page-heading">
+        <div>
+            <h2>Suivi de livraison</h2>
+            <p>Événements horodatés de l'expédition.</p>
+        </div>
+        {% if user.role == "chargeur" or user.role == "transporteur" or user.role == "administrateur" %}
+            <a class="button" href="{% url 'expeditions:ajouter_evenement' expedition.reference %}">
+                Ajouter un événement
+            </a>
+        {% endif %}
+    </div>
+    <div class="table-wrapper">
+        <table>
+            <tr>
+                <th>Date de l'événement</th><th>Type</th><th>Description</th><th>Ajouté par</th>
+            </tr>
+            {% for evenement in evenements %}
+                <tr>
+                    <td>{{ evenement.occurred_at|date:"d/m/Y H:i" }}</td>
+                    <td>{{ evenement.get_type_evenement_display }}</td>
+                    <td>{{ evenement.description }}</td>
+                    <td>{{ evenement.created_by|default:"Système" }}</td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="4">Aucun événement de suivi.</td></tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>
 {% endblock %}

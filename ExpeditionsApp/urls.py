@@ -8,6 +8,11 @@ urlpatterns = [
     path("", views.ExpeditionListView.as_view(), name="liste"),
     path("ajouter/", views.ExpeditionCreateView.as_view(), name="ajouter"),
     path(
+        "<str:reference>/suivi/ajouter/",
+        views.ajouter_evenement,
+        name="ajouter_evenement",
+    ),
+    path(
         "<str:reference>/modifier/",
         views.ExpeditionUpdateView.as_view(),
         name="modifier",

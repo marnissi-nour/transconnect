@@ -14,6 +14,7 @@ class OffreListView(LoginRequiredMixin, ListView):
     model = Offre
     template_name = "offres/liste.html"
     context_object_name = "offres"
+    paginate_by = 10
 
     def get_queryset(self):
         queryset = Offre.objects.select_related(

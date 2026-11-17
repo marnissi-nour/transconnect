@@ -47,6 +47,14 @@ class Expedition(models.Model):
     )
 
     def save(self, *args, **kwargs):
+        ancien_statut = None
+        if self.pk:
+            ancien_statut = (
+                Expedition.objects.filter(pk=self.pk)
+                .values_list("statut", flat=True)
+                .first()
+            )
+
         if not self.reference:
             from django.utils import timezone
 
@@ -74,7 +82,14 @@ class Expedition(models.Model):
 
         self.full_clean()
         super().save(*args, **kwargs)
-    
+
+        if ancien_statut != self.statut:
+            ExpeditionStatutHistorique.objects.create(
+                expedition=self,
+                ancien_statut=ancien_statut,
+                nouveau_statut=self.statut,
+                changed_by=getattr(self, "_status_changed_by", None),
+            )
 
     def clean(self):
         super().clean()
@@ -93,4 +108,75 @@ class Expedition(models.Model):
             f"{self.reference} - "
             f"{self.ville_depart} → {self.ville_arrive}"
         )
+
+
+class ExpeditionStatutHistorique(models.Model):
+    expedition = models.ForeignKey(
+        Expedition,
+        on_delete=models.CASCADE,
+        related_name="historique_statuts",
+    )
+    ancien_statut = models.CharField(max_length=20, blank=True, null=True)
+    nouveau_statut = models.CharField(max_length=20)
+    changed_by = models.ForeignKey(
+        "EntreprisesApp.Utilisateur",
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        related_name="changements_statut_expedition",
+    )
+    changed_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ("-changed_at",)
+
+    def __str__(self):
+        return (
+            f"{self.expedition.reference}: "
+            f"{self.ancien_statut or '—'} → {self.nouveau_statut}"
+        )
+
+    @property
+    def ancien_statut_libelle(self):
+        return dict(Expedition._meta.get_field("statut").choices).get(
+            self.ancien_statut,
+            "Création",
+        )
+
+    @property
+    def nouveau_statut_libelle(self):
+        return dict(Expedition._meta.get_field("statut").choices).get(
+            self.nouveau_statut,
+            self.nouveau_statut,
+        )
+
+
+class ExpeditionEvenement(models.Model):
+    TYPE_CHOICES = [
+        ("collecte", "Collecte"),
+        ("depart", "Départ"),
+        ("transit", "En transit"),
+        ("livraison", "Livraison"),
+        ("incident", "Incident"),
+    ]
+
+    expedition = models.ForeignKey(
+        Expedition,
+        on_delete=models.CASCADE,
+        related_name="evenements_suivi",
+    )
+    type_evenement = models.CharField(max_length=20, choices=TYPE_CHOICES)
+    description = models.TextField()
+    occurred_at = models.DateTimeField()
+    created_by = models.ForeignKey(
+        "EntreprisesApp.Utilisateur",
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        related_name="evenements_suivi_crees",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ("-occurred_at", "-created_at")
 
