@@ -5,6 +5,7 @@
 ### La plateforme B2B qui connecte **chargeurs** et **transporteurs**
 
 *Publiez une expédition → recevez des offres → choisissez le meilleur transporteur → suivez la livraison.*
+
 *Tout depuis un seul espace sécurisé.*
 
 <br>
