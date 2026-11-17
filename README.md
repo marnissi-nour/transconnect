@@ -1,442 +1,358 @@
-# TransConnect
+<div align="center">
 
-Plateforme web B2B de mise en relation entre entreprises chargeuses et
-transporteurs. TransConnect permet de publier des expéditions, de gérer une
-flotte de véhicules, de recevoir des offres de transport et de suivre les
-opérations depuis un espace sécurisé.
+# 🚛 TransConnect
 
-## Sommaire
+### La plateforme B2B qui connecte **chargeurs** et **transporteurs**
 
-- [Présentation](#présentation)
-- [Fonctionnalités](#fonctionnalités)
-- [Rôles et droits](#rôles-et-droits)
-- [Règles métier](#règles-métier)
-- [Technologies](#technologies)
-- [Installation](#installation)
-- [Configuration](#configuration)
-- [Lancement](#lancement)
-- [Parcours principaux](#parcours-principaux)
-- [Structure du projet](#structure-du-projet)
-- [URLs principales](#urls-principales)
-- [Vérifications](#vérifications)
-- [Sécurité et production](#sécurité-et-production)
-- [Améliorations possibles](#améliorations-possibles)
+*Publiez une expédition → recevez des offres → choisissez le meilleur transporteur → suivez la livraison.*
+*Tout depuis un seul espace sécurisé.*
 
-## Présentation
+<br>
 
-TransConnect centralise les échanges liés au transport de marchandises :
+![Python](https://img.shields.io/badge/Python-3.x-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![Django](https://img.shields.io/badge/Django-5.2-092E20?style=for-the-badge&logo=django&logoColor=white)
+![SQLite](https://img.shields.io/badge/SQLite-003B57?style=for-the-badge&logo=sqlite&logoColor=white)
+![JavaScript](https://img.shields.io/badge/JavaScript-vanilla-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
 
-1. Une entreprise **chargeur** décrit un besoin d'expédition.
-2. Une entreprise **transporteur** consulte les expéditions disponibles.
-3. Le transporteur propose un prix, un délai et un véhicule compatible.
-4. Le chargeur consulte les offres et peut en accepter une.
-5. L'expédition passe automatiquement à l'état attribué lorsque l'offre est
-   acceptée.
-6. Les changements de statut sont conservés dans un historique horodaté.
-7. Le chargeur est informé des nouvelles offres depuis sa boîte de
-   notifications.
+![Tests](https://img.shields.io/badge/tests-passing-brightgreen?style=flat-square)
+![Interface](https://img.shields.io/badge/interface-fran%C3%A7ais-blue?style=flat-square)
+![Dark mode](https://img.shields.io/badge/th%C3%A8me-clair%20%2F%20sombre-8A2BE2?style=flat-square)
+![Responsive](https://img.shields.io/badge/design-responsive-orange?style=flat-square)
+![Status](https://img.shields.io/badge/statut-en%20d%C3%A9veloppement-yellow?style=flat-square)
 
-L'interface est en français et possède une identité visuelle B2B responsive,
-avec un mode clair/sombre, une navigation adaptée aux petits écrans et des
-illustrations SVG intégrées aux templates.
+<br>
 
-## Fonctionnalités
+<img width="1419" height="840" alt="Tableau de bord TransConnect" src="https://github.com/user-attachments/assets/fa4db1ef-6dfb-4820-a330-f64902a47b64" />
 
-### Authentification et comptes
+</div>
 
-- Connexion, déconnexion et inscription.
-- Modèle utilisateur personnalisé `EntreprisesApp.Utilisateur`.
-- Modification du profil.
-- Changement du mot de passe.
-- Redirection des utilisateurs non connectés vers la page de connexion.
-- Tableau de bord personnalisé selon le rôle.
-- Création d'une seule entreprise par utilisateur.
+---
 
-### Gestion des entreprises
+## 📖 Sommaire
 
-- Création, consultation, modification et suppression d'une entreprise.
-- Association d'une entreprise à son gérant.
-- Vérification du matricule fiscal tunisien.
-- Vérification du type d'entreprise :
-  - `chargeur`
-  - `transporteur`
+- [Pourquoi TransConnect ?](#-pourquoi-transconnect-)
+- [Aperçu](#-aperçu)
+- [Fonctionnalités](#-fonctionnalités)
+- [Comment ça marche](#-comment-ça-marche)
+- [Rôles et droits](#-rôles-et-droits)
+- [Règles métier](#-règles-métier)
+- [Points forts techniques](#-points-forts-techniques)
+- [Stack technique](#-stack-technique)
+- [Démarrage rapide](#-démarrage-rapide)
+- [Structure du projet](#-structure-du-projet)
+- [Tests](#-tests)
+- [Sécurité et production](#-sécurité-et-production)
+- [Feuille de route](#-feuille-de-route)
+- [Auteure](#-auteure)
 
-### Gestion des expéditions
+---
 
-- Création automatique d'une référence annuelle au format
-  `EXP-AA-00001`.
-- Gestion des villes de départ et d'arrivée.
-- Date souhaitée, poids et description.
-- Statuts :
-  - Publiée
-  - Attribuée
-  - En cours
-  - Livrée
-  - Annulée
-- Isolation des données : un chargeur ne voit que les expéditions de son
-  entreprise, sauf l'administrateur.
-- Historique des statuts consultable depuis le détail d'une expédition.
-- Recherche par ville, statut et plage de poids.
+## 💡 Pourquoi TransConnect ?
 
-### Gestion des véhicules
+Dans le transport de marchandises, la mise en relation entre une entreprise qui doit expédier et un transporteur disponible reste souvent **manuelle** : appels, messages, devis dispersés, aucun historique.
 
-- Immatriculation unique.
-- Type de véhicule et capacité en kilogrammes.
-- Disponibilité du véhicule.
-- Vérification qu'un véhicule appartient à une entreprise transporteur.
-- Vérification automatique de la capacité selon le type de véhicule.
+**TransConnect centralise tout, de la publication au suivi de livraison.**
 
-### Gestion des offres
-
-- Création d'une offre avec prix, délai, véhicule et expédition.
-- Une offre ne peut être proposée que sur une expédition publiée.
-- Le véhicule doit appartenir au transporteur qui propose l'offre.
-- Un véhicule indisponible ne peut pas être utilisé pour une nouvelle offre.
-- Une seule offre proposée active par transporteur et par expédition.
-- Acceptation d'une offre :
-  - l'expédition devient `attribuée` ;
-  - les autres offres proposées deviennent `refusées`.
-- Notification persistante du gérant chargeur lors de la création d'une
-  nouvelle offre, avec marquage comme lue.
-
-### Interface et expérience utilisateur
-
-- Design corporate adapté à la logistique B2B.
-- Logo TransConnect simplifié en monogramme `TC`.
-- Navigation avec accès regroupés au profil et à la déconnexion.
-- Mode clair/sombre mémorisé dans le navigateur.
-- Menu responsive sur mobile.
-- Cartes de services, indicateurs, raccourcis et parcours en trois étapes.
-- Illustrations et icônes SVG sans dépendance externe.
-- Formulaires avec affichage/masquage du mot de passe.
-- Confirmation avant suppression.
-- Pagination des listes d'expéditions, d'offres, de véhicules et
-  d'entreprises.
-- Suivi de livraison avec événements horodatés, type, description et auteur.
-
-## Rôles et droits
-
-| Fonction | Chargeur | Transporteur | Administrateur |
-| --- | :---: | :---: | :---: |
-| Consulter son tableau de bord | Oui | Oui | Oui |
-| Gérer son profil | Oui | Oui | Oui |
-| Gérer son entreprise | Oui | Oui | Oui |
-| Créer une expédition | Oui | Non | Oui |
-| Modifier/supprimer ses expéditions | Oui | Non | Oui |
-| Consulter les expéditions | Oui | Oui | Oui |
-| Créer/modifier des véhicules | Non | Oui | Oui |
-| Créer une offre | Non | Oui | Oui |
-| Consulter les offres reçues | Oui | Oui | Oui |
-| Voir toutes les données | Non | Non | Oui |
-
-Les contrôles d'accès sont centralisés dans
-[`config/access.py`](config/access.py). Les vues filtrent également les
-querysets et les formulaires afin d'éviter l'accès à des objets d'une autre
-entreprise.
-
-## Règles métier
-
-### Compatibilité des poids
-
-Les limites sont centralisées dans
-[`config/weights.py`](config/weights.py) :
-
-| Type | Poids autorisé |
+| 📦 Pour le **chargeur** | 🚚 Pour le **transporteur** |
 | --- | --- |
-| Camionnette | `0.01` à `1500 kg` |
-| Fourgon | `0.01` à `3500 kg` |
-| Camion porteur | `3500.01` à `19000 kg` |
-| Semi-remorque | `19000.01` à `26000 kg` |
+| Publie ses besoins d'expédition | Consulte les expéditions disponibles |
+| Compare les offres reçues | Propose prix, délai et véhicule |
+| Accepte l'offre qui lui convient | Gère sa flotte et sa disponibilité |
+| Suit la livraison étape par étape | Reçoit l'attribution automatiquement |
 
-La capacité déclarée d'un véhicule doit également rester dans la plage de
-son type. Les valeurs sont comparées avec `Decimal` pour éviter les erreurs
-de précision des nombres flottants.
+---
 
-### Validation des données
+## 🖼️ Aperçu
 
-- Les poids et prix doivent être strictement supérieurs à `0`.
-- Le délai d'une offre doit être au moins égal à un jour.
-- Une adresse d'entreprise doit contenir au moins 20 caractères.
-- Les adresses email doivent utiliser le domaine `gmail.com` selon le
-  validateur actuel du projet.
-- Le matricule fiscal doit respecter le format configuré dans
-  `EntreprisesApp/models.py`.
+| Tableau de bord | Détail d'une expédition | Mode sombre |
+| :---: | :---: | :---: |
+| <img width="400" alt="Tableau de bord" src="https://github.com/user-attachments/assets/fa4db1ef-6dfb-4820-a330-f64902a47b64" /> | <img width="400" alt="Détail d'une expédition" src="https://github.com/user-attachments/assets/47b633db-4627-4db2-974c-94ac04573358" /> | <img width="400" alt="Mode sombre" src="https://github.com/user-attachments/assets/dca529c9-0158-48f6-bb92-535b4f67a097" /> |
 
-## Technologies
+---
 
-- Python 3
-- Django `5.2.17`
-- SQLite
-- HTML5, CSS3 et JavaScript natif
-- Templates Django
-- SVG inline pour le logo et les illustrations
+## ✨ Fonctionnalités
 
-Aucune bibliothèque frontend externe n'est nécessaire pour l'interface
-actuelle.
+### 🔐 Comptes et authentification
+- Inscription, connexion, déconnexion
+- Modèle utilisateur personnalisé (`EntreprisesApp.Utilisateur`)
+- Profil modifiable et changement de mot de passe
+- Tableau de bord **adapté au rôle**
+- Une seule entreprise par utilisateur
 
-## Installation
+### 🏢 Entreprises
+- Création, modification, consultation et suppression
+- Type d'entreprise : `chargeur` ou `transporteur`
+- Validation du **matricule fiscal tunisien**
 
-### Prérequis
+### 📦 Expéditions
+- Référence annuelle automatique : `EXP-AA-00001`
+- Villes de départ et d'arrivée, date souhaitée, poids, description
+- Statuts : *Publiée → Attribuée → En cours → Livrée* (ou *Annulée*)
+- **Historique horodaté** de chaque changement de statut
+- **Suivi de livraison** avec événements (type, description, auteur, date)
+- Recherche par ville, statut et plage de poids
+- **Isolation des données** : chaque chargeur ne voit que ses expéditions
 
-- Python installé et disponible dans le terminal.
-- Git, si le projet est récupéré depuis un dépôt.
-- Windows PowerShell recommandé pour l'environnement actuel.
+### 🚚 Véhicules
+- Immatriculation unique
+- Types : camionnette, fourgon, camion porteur, semi-remorque
+- Capacité contrôlée automatiquement selon le type
+- Gestion de la disponibilité
 
-### Récupérer le projet
+### 💬 Offres
+- Prix, délai et véhicule proposés par le transporteur
+- Une seule offre active par transporteur et par expédition
+- À l'acceptation : l'expédition devient *attribuée* et les autres offres sont automatiquement *refusées*
+- 🔔 Notification au chargeur à chaque nouvelle offre
 
-```powershell
-git clone <url-du-depot>
+### 🎨 Interface
+- Design B2B responsive, **mode clair / sombre** mémorisé
+- Navigation mobile adaptée
+- Illustrations et icônes SVG intégrées, **sans dépendance externe**
+- Pagination, confirmations de suppression, affichage du mot de passe
+
+---
+
+## 🔄 Comment ça marche
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor C as 📦 Chargeur
+    participant T as 🚛 TransConnect
+    actor R as 🚚 Transporteur
+
+    C->>T: Publie une expédition
+    T-->>R: Expédition visible (statut « Publiée »)
+    R->>T: Envoie une offre (prix, délai, véhicule)
+    T-->>C: 🔔 Notification de nouvelle offre
+    C->>T: Compare et accepte une offre
+    T->>T: Expédition « Attribuée » + autres offres refusées
+    R->>T: Met à jour le suivi de livraison
+    T-->>C: Historique et événements en temps réel
+```
+
+### Cycle de vie d'une expédition
+
+```mermaid
+stateDiagram-v2
+    [*] --> Publiée
+    Publiée --> Attribuée: offre acceptée
+    Attribuée --> EnCours: départ
+    EnCours --> Livrée: livraison confirmée
+    Publiée --> Annulée
+    Livrée --> [*]
+    Annulée --> [*]
+```
+
+---
+
+## 👥 Rôles et droits
+
+| Fonction | Chargeur | Transporteur | Admin |
+| --- | :---: | :---: | :---: |
+| Tableau de bord et profil | ✅ | ✅ | ✅ |
+| Gérer son entreprise | ✅ | ✅ | ✅ |
+| Créer / modifier des expéditions | ✅ | ❌ | ✅ |
+| Consulter les expéditions | ✅ | ✅ | ✅ |
+| Gérer des véhicules | ❌ | ✅ | ✅ |
+| Créer une offre | ❌ | ✅ | ✅ |
+| Consulter les offres reçues | ✅ | ✅ | ✅ |
+| Voir toutes les données | ❌ | ❌ | ✅ |
+
+Les contrôles d'accès sont centralisés dans [`config/access.py`](config/access.py). Les vues filtrent aussi les querysets et formulaires pour empêcher l'accès aux objets d'une autre entreprise.
+
+---
+
+## 📐 Règles métier
+
+### Compatibilité poids / véhicule
+
+Limites centralisées dans [`config/weights.py`](config/weights.py) et comparées avec `Decimal` (pas d'erreurs de précision flottante) :
+
+| Type de véhicule | Poids autorisé |
+| --- | --- |
+| 🚐 Camionnette | jusqu'à **1 500 kg** |
+| 🚚 Fourgon | jusqu'à **3 500 kg** |
+| 🚛 Camion porteur | de 3 500 à **19 000 kg** |
+| 🚛 Semi-remorque | de 19 000 à **26 000 kg** |
+
+### Validations
+- Poids et prix strictement supérieurs à `0`
+- Délai d'une offre : au moins **1 jour**
+- Adresse d'entreprise : au moins **20 caractères**
+- Une offre n'est possible que sur une expédition **publiée**
+- Le véhicule doit appartenir au transporteur et être **disponible**
+
+---
+
+## 🏆 Points forts techniques
+
+| | |
+| --- | --- |
+| 🧩 **Architecture modulaire** | 5 apps Django indépendantes, chacune avec une responsabilité claire |
+| 🔒 **Sécurité par conception** | Contrôles d'accès centralisés + querysets filtrés par entreprise |
+| 🧮 **Calculs fiables** | Comparaisons de poids avec `Decimal`, jamais de `float` |
+| 🧾 **Traçabilité** | Historique horodaté des statuts et événements de suivi avec auteur |
+| 🇹🇳 **Adapté au contexte local** | Validation du matricule fiscal tunisien, interface en français |
+| 🪶 **Léger et autonome** | JavaScript natif, SVG inline, aucune dépendance front externe |
+| 🌗 **UX soignée** | Mode clair / sombre mémorisé, responsive, navigation mobile |
+
+---
+
+## 🛠️ Stack technique
+
+| Couche | Technologie |
+| --- | --- |
+| Backend | Python 3, **Django 5.2** |
+| Base de données | SQLite (PostgreSQL recommandé en production) |
+| Frontend | HTML5, CSS3, JavaScript natif, templates Django |
+| Graphismes | SVG inline |
+| Outillage | `uv` / `pip`, `python-dotenv` |
+
+---
+
+## 🚀 Démarrage rapide
+
+### 1. Cloner le dépôt
+
+```bash
+git clone https://github.com/marnissi-nour/transconnect.git
 cd transconnect
 ```
 
-### Installer les dépendances
+### 2. Installer les dépendances
 
-Le projet déclare ses dépendances dans `pyproject.toml` et les versions
-résolues sont conservées dans `uv.lock`. Avec
-[uv](https://docs.astral.sh/uv/) installé, créer l'environnement virtuel et
-installer les dépendances avec :
+**Avec [uv](https://docs.astral.sh/uv/) (recommandé)**
 
-```powershell
+```bash
 uv sync
 ```
 
-Cette commande utilise la version de Python indiquée dans `.python-version`.
+**Ou avec pip**
 
-Sans uv, créer l'environnement virtuel puis installer les dépendances
-principales manuellement :
-
-```powershell
-py -m venv .venv
+```bash
+python -m venv .venv
+# Windows PowerShell : .\.venv\Scripts\Activate.ps1
+# macOS / Linux     : source .venv/bin/activate
+pip install "Django==5.2.*" "python-dotenv>=1.2.3"
 ```
 
-Activer l'environnement sous Windows PowerShell :
+### 3. Préparer la base de données
 
-```powershell
-.\.venv\Scripts\Activate.ps1
-```
-
-Si PowerShell bloque l'activation, il est possible d'utiliser directement
-l'interpréteur de l'environnement :
-
-```powershell
-.\.venv\Scripts\python.exe manage.py check
-```
-
-```powershell
-python -m pip install "Django==5.2.*" "python-dotenv>=1.2.3"
-```
-
-## Configuration
-
-Les principaux réglages se trouvent dans
-[`config/settings.py`](config/settings.py) :
-
-- Base SQLite : `nour.sqlite3`
-- Modèle utilisateur : `EntreprisesApp.Utilisateur`
-- Templates : dossier `templates/`
-- URL de connexion : `/connexion/`
-- Redirection après connexion : `/dashboard/`
-- Redirection après déconnexion : `/`
-- Langue Django actuelle : `en-us`
-- Fuseau horaire actuel : `UTC`
-
-### Base de données
-
-Appliquer les migrations :
-
-```powershell
+```bash
 python manage.py migrate
+python manage.py createsuperuser   # optionnel : accès à /admin/
 ```
 
-Créer un compte administrateur Django pour `/admin/` :
+### 4. Lancer le serveur
 
-```powershell
-python manage.py createsuperuser
-```
-
-Le rôle applicatif `administrateur` est distinct du superutilisateur Django.
-Pour l'administration fonctionnelle de la plateforme, utiliser un utilisateur
-avec le rôle approprié.
-
-## Lancement
-
-Démarrer le serveur de développement :
-
-```powershell
+```bash
 python manage.py runserver
 ```
 
-Application disponible à l'adresse :
+👉 Ouvrez **http://127.0.0.1:8000/**
 
-```text
-http://127.0.0.1:8000/
-```
+### 5. Essayer le parcours complet
 
-Sous Windows, avec l'environnement du projet :
+1. 📦 Inscrivez-vous comme **chargeur** (`/inscription/`) et créez votre entreprise.
+2. 🚚 Dans un autre navigateur, inscrivez-vous comme **transporteur**, créez l'entreprise et ajoutez un véhicule.
+3. 📝 Le chargeur publie une expédition.
+4. 💬 Le transporteur envoie une offre.
+5. ✅ Le chargeur accepte l'offre et suit la livraison.
 
-```powershell
-.\.venv\Scripts\python.exe manage.py runserver 127.0.0.1:8000
-```
+---
 
-## Parcours principaux
-
-### Créer un compte chargeur ou transporteur
-
-1. Ouvrir `/inscription/`.
-2. Saisir les informations du compte.
-3. Choisir `Chargeur` ou `Transporteur`.
-4. Se connecter depuis `/connexion/`.
-5. Créer l'entreprise depuis le tableau de bord.
-
-L'inscription publique ne propose pas le rôle administrateur.
-
-### Parcours chargeur
-
-1. Créer une entreprise de type chargeur.
-2. Ouvrir `Expéditions`.
-3. Ajouter une expédition avec son poids.
-4. Consulter les offres reçues.
-5. Accepter l'offre choisie.
-
-### Parcours transporteur
-
-1. Créer une entreprise de type transporteur.
-2. Ajouter un véhicule.
-3. Vérifier sa capacité et sa disponibilité.
-4. Consulter les expéditions publiées.
-5. Créer une offre avec un véhicule compatible.
-
-## Structure du projet
+## 🗂️ Structure du projet
 
 ```text
 transconnect/
-├── config/
-│   ├── access.py              # Règles d'accès et rôles
-│   ├── forms.py               # Formulaires d'authentification/profil
-│   ├── settings.py            # Configuration Django
-│   ├── urls.py                # Routes principales
-│   ├── views.py               # Authentification et dashboard
-│   └── weights.py             # Limites de poids partagées
-├── EntreprisesApp/
-│   ├── models.py              # Utilisateur et entreprise
-│   ├── urls.py
-│   ├── views.py
-│   └── migrations/
-├── VehiculesApp/
-│   ├── models.py              # Véhicules et capacité
-│   ├── urls.py
-│   ├── views.py
-│   └── migrations/
-├── ExpeditionsApp/
-│   ├── models.py              # Expéditions, statuts et suivi
-│   ├── urls.py
-│   ├── views.py
-│   └── migrations/
-├── OffersApp/
-│   ├── models.py              # Offres et règles d'acceptation
-│   ├── urls.py
-│   ├── views.py
-│   └── migrations/
-├── NotificationsApp/
-│   ├── models.py              # Notifications de nouvelles offres
-│   ├── urls.py
-│   ├── views.py
-│   └── migrations/
-├── templates/
-│   ├── base.html              # Layout, navigation, thème et JS
-│   ├── home.html              # Page d'accueil
-│   ├── dashboard.html         # Tableau de bord
-│   ├── registration/          # Authentification et profil
-│   ├── expeditions/
-│   ├── vehicules/
-│   ├── offres/
-│   └── entreprises/
+├── config/                # Réglages, URLs, accès, poids, authentification
+│   ├── access.py          # Rôles et règles d'accès
+│   ├── weights.py         # Limites de poids partagées
+│   └── settings.py
+├── EntreprisesApp/        # Utilisateurs et entreprises
+├── VehiculesApp/          # Flotte et capacités
+├── ExpeditionsApp/        # Expéditions, historique, suivi
+├── OffersApp/             # Offres et acceptation
+├── NotificationsApp/      # Notifications de nouvelles offres
+├── templates/             # Interface (base, dashboard, formulaires…)
 ├── manage.py
-├── nour.sqlite3               # Base locale de développement
-└── README.md
+└── pyproject.toml
 ```
 
-## URLs principales
+### Routes principales
 
 | URL | Description |
 | --- | --- |
 | `/` | Accueil |
-| `/connexion/` | Connexion |
-| `/inscription/` | Inscription |
-| `/deconnexion/` | Déconnexion |
-| `/profil/` | Profil |
-| `/mot-de-passe/` | Changement du mot de passe |
+| `/connexion/` · `/inscription/` | Authentification |
 | `/dashboard/` | Tableau de bord |
-| `/Expeditions/` | Gestion des expéditions |
-| `/Vehicules/` | Gestion des véhicules |
-| `/Offres/` | Gestion des offres |
-| `/Notifications/` | Notifications et nouvelles offres |
-| `/Entreprises/` | Gestion des entreprises |
+| `/Expeditions/` | Expéditions |
+| `/Vehicules/` | Véhicules |
+| `/Offres/` | Offres |
+| `/Notifications/` | Notifications |
+| `/Entreprises/` | Entreprises |
 | `/admin/` | Administration Django |
 
-## Vérifications
+---
 
-Vérifier la configuration Django :
+## ✅ Tests
 
-```powershell
+```bash
 python manage.py check
-```
-
-Vérifier les migrations :
-
-```powershell
-python manage.py makemigrations --check
-python manage.py migrate --plan
-```
-
-Lancer la suite de tests :
-
-```powershell
 python manage.py test
 ```
 
-Vérifier les espaces et erreurs de patch :
+Les tests actuels couvrent l'historique des statuts et le suivi des expéditions. Étendre la couverture aux droits d'accès, aux limites de poids et à l'acceptation des offres fait partie de la feuille de route.
 
-```powershell
-git diff --check
+---
+
+## 🔒 Sécurité et production
+
+La configuration par défaut est prévue pour le **développement**. Avant tout déploiement :
+
+- [ ] Déplacer `SECRET_KEY` dans une variable d'environnement
+- [ ] Passer `DEBUG = False`
+- [ ] Configurer `ALLOWED_HOSTS`
+- [ ] Utiliser une base de production (PostgreSQL)
+- [ ] Lancer `collectstatic` et servir les fichiers statiques
+- [ ] Activer HTTPS et les cookies sécurisés
+- [ ] Configurer un vrai backend e-mail (SMTP)
+- [ ] Ne jamais versionner `*.sqlite3` ni les fichiers `.env`
+- [ ] Vérifier avec `python manage.py check --deploy`
+
+---
+
+## 🧭 Feuille de route
+
+- [ ] Tests automatisés pour les droits, les poids et l'acceptation des offres
+- [ ] Passage à PostgreSQL et déploiement avec démo en ligne
+- [ ] Pièces jointes (documents de transport, bons de livraison)
+- [ ] Interface multilingue (français / arabe / anglais)
+- [ ] API REST et notifications par e-mail
+- [ ] Évaluation et avis entre entreprises
+
+---
+
+## 🤝 Contribuer
+
+Les suggestions sont les bienvenues : ouvrez une *issue* pour discuter d'un changement, puis une *pull request*.
+
+```bash
+git checkout -b feat/ma-fonctionnalite
+git commit -m "Feat: ma fonctionnalité"
+git push origin feat/ma-fonctionnalite
 ```
 
-Le JavaScript principal est intégré dans
-[`templates/base.html`](templates/base.html). Avec Node.js installé, une
-vérification syntaxique peut être exécutée après extraction du bloc script.
+---
 
-## Sécurité et production
+## 👩‍💻 Auteure
 
-La configuration actuelle est destinée au développement. Avant tout
-déploiement, il faut obligatoirement :
+<div align="center">
 
-1. Remplacer `SECRET_KEY` par une variable d'environnement secrète.
-2. Passer `DEBUG = False`.
-3. Configurer `ALLOWED_HOSTS`.
-4. Configurer une base de données de production.
-5. Configurer les fichiers statiques avec `collectstatic`.
-6. Utiliser HTTPS et activer les cookies sécurisés.
-7. Configurer un vrai backend email.
-8. Ne pas versionner `nour.sqlite3`, les secrets ou les fichiers `.env`.
-9. Vérifier les réglages de sécurité avec :
+Fait avec ❤️ par **[Nour Marnissi](https://github.com/marnissi-nour)**
 
-   ```powershell
-   python manage.py check --deploy
-   ```
+⭐ Si ce projet vous plaît, n'hésitez pas à lui laisser une étoile !
 
-Le fichier de configuration contient une section `MAILERS` orientée vers la
-console. Pour un envoi réel, configurer explicitement `EMAIL_BACKEND` et les
-paramètres SMTP adaptés à l'environnement de déploiement.
-
-## Améliorations possibles
-
-- Ajouter des tests permanents pour les droits, les poids et l'acceptation des
-  offres.
-- Ajouter un historique des changements de statut.
-- Ajouter des notifications pour les nouvelles offres.
-- Ajouter une recherche et des filtres avancés par ville, poids et statut.
-- Ajouter une pagination sur les listes importantes.
-- Ajouter un suivi de livraison avec événements horodatés.
-- Remplacer SQLite par PostgreSQL en production.
-- Ajouter une gestion de pièces jointes pour les documents de transport.
-
+</div>
