@@ -418,7 +418,3 @@ paramètres SMTP adaptés à l'environnement de déploiement.
 - Remplacer SQLite par PostgreSQL en production.
 - Ajouter une gestion de pièces jointes pour les documents de transport.
 
-## Licence
-
-Aucune licence open source n'est déclarée actuellement dans le projet.
-Ajouter un fichier `LICENSE` si le projet doit être distribué publiquement.
