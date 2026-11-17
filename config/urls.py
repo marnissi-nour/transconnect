@@ -22,6 +22,17 @@ from config import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.home, name='home'),
+    path('connexion/', views.TransConnectLoginView.as_view(), name='login'),
+    path('inscription/', views.SignUpView.as_view(), name='signup'),
+    path('deconnexion/', views.TransConnectLogoutView.as_view(), name='logout'),
+    path('profil/', views.ProfileView.as_view(), name='profile'),
+    path('mot-de-passe/', views.TransConnectPasswordChangeView.as_view(), name='password_change'),
+    path(
+        'mot-de-passe/modifie/',
+        views.PasswordChangeDoneView.as_view(),
+        name='password_change_done',
+    ),
+    path('dashboard/', views.dashboard, name='dashboard'),
     path('Expeditions/', include('ExpeditionsApp.urls')),
     path('Vehicules/', include('VehiculesApp.urls')),
     path('Offres/', include('OffersApp.urls')),

@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}Tableau de bord | TransConnect{% endblock %}
+
+{% block content %}
+<div class="page-heading dashboard-heading">
+    <div>
+        <span class="auth-eyebrow">Vue d'ensemble</span>
+        <h1>Bonjour {{ user.first_name|default:user.username }}</h1>
+        <p>Votre espace {{ role_label }} est prêt. Voici les dernières informations utiles.</p>
+    </div>
+    <span class="status status-success">Compte actif</span>
+</div>
+
+<section class="dashboard-stats" aria-label="Indicateurs clés">
+    {% for label, value, caption in stats %}
+        <article class="stat-card">
+            <span class="stat-label">{{ label }}</span>
+            <strong class="stat-value">{{ value }}</strong>
+            <span class="stat-caption">{{ caption }}</span>
+        </article>
+    {% endfor %}
+</section>
+
+<section class="dashboard-grid">
+    <div class="content-card">
+        <div class="card-header">
+            <div>
+                <span class="auth-eyebrow">Activité récente</span>
+                <h2 class="dashboard-section-title">Vos dernières opérations</h2>
+            </div>
+        </div>
+        {% if role == "transporteur" %}
+            <ul class="dashboard-list">
+                {% for item in recent_items %}
+                    <li>
+                        <span>
+                            <strong>{{ item.expedition.reference }}</strong>
+                            <small>{{ item.vehicule.immatriculation }}</small>
+                        </span>
+                        <span class="status status-neutral">{{ item.get_statut_display }}</span>
+                    </li>
+                {% empty %}
+                    <li class="empty-state">Aucune offre récente.</li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <ul class="dashboard-list">
+                {% for item in recent_items %}
+                    <li>
+                        <span>
+                            <strong>{{ item.reference }}</strong>
+                            <small>{{ item.ville_depart }} → {{ item.ville_arrive }}</small>
+                        </span>
+                        <span class="status status-neutral">{{ item.get_statut_display }}</span>
+                    </li>
+                {% empty %}
+                    <li class="empty-state">Aucune expédition récente.</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+    <aside class="content-card dashboard-shortcuts">
+        <span class="auth-eyebrow">Accès rapide</span>
+        <h2 class="dashboard-section-title">Que souhaitez-vous faire ?</h2>
+        {% if not entreprise and role != "administrateur" %}
+            <div class="onboarding-note">
+                <strong>Commencez par créer votre entreprise</strong>
+                <span>Elle sera automatiquement liée à votre compte.</span>
+                <a class="button" href="{% url 'entreprises:ajouter' %}">
+                    Créer mon entreprise
+                </a>
+            </div>
+        {% endif %}
+        {% if role == "administrateur" or role == "chargeur" or role == "transporteur" %}
+            <a class="shortcut-link" href="{% url 'expeditions:liste' %}">
+                <span>01</span> Consulter les expéditions
+            </a>
+        {% endif %}
+        {% if role == "administrateur" or role == "transporteur" %}
+            <a class="shortcut-link" href="{% url 'vehicules:liste' %}">
+                <span>02</span> Gérer les véhicules
+            </a>
+        {% endif %}
+        {% if role == "administrateur" or role == "chargeur" or role == "transporteur" %}
+            <a class="shortcut-link" href="{% url 'offres:liste' %}">
+                <span>03</span> Voir les offres
+            </a>
+        {% endif %}
+        <a class="shortcut-link" href="{% url 'profile' %}">
+            <span>04</span> Gérer mon profil
+        </a>
+    </aside>
+</section>
+{% endblock %}

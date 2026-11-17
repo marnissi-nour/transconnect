@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Connexion | TransConnect{% endblock %}
+
+{% block content %}
+<section class="auth-shell">
+    <div class="auth-layout">
+        <aside class="auth-showcase">
+            <div class="auth-showcase-content">
+                <span class="auth-eyebrow">TransConnect</span>
+                <h2>La logistique avance avec vous.</h2>
+                <p>Retrouvez vos expéditions, vos offres et votre réseau au même endroit.</p>
+                <div class="auth-illustration" aria-hidden="true">
+                    <svg viewBox="0 0 120 90" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M10 58h100" stroke="#bfdbfe" stroke-linecap="round"
+                              stroke-width="5"/>
+                        <path d="M20 36h55v25H20z" fill="#fbbf24"/>
+                        <path d="M75 46h15l12 15H75z" fill="#f59e0b"/>
+                        <circle cx="37" cy="66" r="8" fill="#172554"/>
+                        <circle cx="88" cy="66" r="8" fill="#172554"/>
+                        <path d="M12 20h60L60 8l7-7 22 22-22 22-7-7 12-12H12v-6Z"
+                              fill="#fef3c7"/>
+                    </svg>
+                </div>
+                <ul class="auth-benefits">
+                    <li>Suivi simple et centralisé</li>
+                    <li>Accès sécurisé par profil</li>
+                    <li>Des connexions plus fluides</li>
+                </ul>
+            </div>
+            <span class="auth-showcase-footer">Plateforme logistique B2B</span>
+        </aside>
+        <div class="auth-card">
+            <div class="auth-heading">
+                <span class="auth-eyebrow">Espace sécurisé</span>
+                <h1>Bon retour parmi nous</h1>
+                <p>Connectez-vous pour retrouver votre activité logistique.</p>
+            </div>
+            {% if form.non_field_errors %}
+                <div class="form-alert" role="alert">{{ form.non_field_errors }}</div>
+            {% endif %}
+            <form class="auth-form" method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button class="button auth-submit" type="submit">Se connecter</button>
+            </form>
+            <p class="auth-switch">
+                Pas encore de compte ?
+                <a href="{% url 'signup' %}">Créer un compte</a>
+            </p>
+        </div>
+    </div>
+</section>
+{% endblock %}

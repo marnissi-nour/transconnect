@@ -1,6 +1,10 @@
+from decimal import Decimal
+
 from django.db import models
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
+
+from config.weights import VEHICLE_WEIGHT_LIMITS
 
 
 class Vehicule(models.Model):
@@ -43,6 +47,18 @@ class Vehicule(models.Model):
                     "entreprise": (
                         "Un véhicule doit appartenir à une "
                         "entreprise de type transporteur."
+                    )
+                })
+
+        if self.type_vehicule and self.capacite_kg:
+            minimum, maximum = VEHICLE_WEIGHT_LIMITS[self.type_vehicule]
+            capacite = Decimal(self.capacite_kg)
+            if not (minimum < capacite <= maximum):
+                raise ValidationError({
+                    "capacite_kg": (
+                        f"La capacité d'un {self.get_type_vehicule_display()} "
+                        f"doit être comprise entre {minimum + Decimal('0.01')} "
+                        f"et {maximum} kg."
                     )
                 })
 

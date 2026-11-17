@@ -6,11 +6,19 @@
 <div class="page-heading">
     <div>
         <h1>Toutes les expéditions</h1>
-        <p>Consultez et gérez toutes les expéditions de la plateforme.</p>
+        <p>
+            {% if user.role == "transporteur" %}
+                Consultez les expéditions publiées pour proposer une offre.
+            {% else %}
+                Consultez et gérez vos expéditions.
+            {% endif %}
+        </p>
     </div>
-    <a class="button" href="{% url 'expeditions:ajouter' %}">
-        Ajouter une expédition
-    </a>
+    {% if user.role == "chargeur" or user.role == "administrateur" %}
+        <a class="button" href="{% url 'expeditions:ajouter' %}">
+            Ajouter une expédition
+        </a>
+    {% endif %}
 </div>
 
 <form class="filter-panel" method="get">
@@ -92,18 +100,20 @@
                    href="{% url 'expeditions:detail' expedition.reference %}">
                     Voir le détail
                 </a>
-                <span>
-                    <a class="button button-secondary"
-                       href="{% url 'expeditions:modifier' expedition.reference %}">
-                        Modifier
-                    </a>
-                    <a class="button button-danger"
-                       href="{% url 'expeditions:supprimer' expedition.reference %}"
-                       data-delete-url="{% url 'expeditions:supprimer' expedition.reference %}"
-                       data-delete-message="Supprimer l'expédition {{ expedition.reference|escapejs }} ?">
-                        Supprimer
-                    </a>
-                </span>
+                {% if user.role == "chargeur" or user.role == "administrateur" %}
+                    <span>
+                        <a class="button button-secondary"
+                           href="{% url 'expeditions:modifier' expedition.reference %}">
+                            Modifier
+                        </a>
+                        <a class="button button-danger"
+                           href="{% url 'expeditions:supprimer' expedition.reference %}"
+                           data-delete-url="{% url 'expeditions:supprimer' expedition.reference %}"
+                           data-delete-message="Supprimer l'expédition {{ expedition.reference|escapejs }} ?">
+                            Supprimer
+                        </a>
+                    </span>
+                {% endif %}
             </div>
         </li>
     {% empty %}

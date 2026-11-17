@@ -20,12 +20,14 @@
         <div class="detail-item"><dt>Véhicule</dt><dd>{{ offre.vehicule.immatriculation|upper }}</dd></div>
     </dl>
     <div class="page-actions">
-        <a class="button" href="{% url 'offres:modifier' offre.pk %}">Modifier</a>
-        <a class="button button-danger" href="{% url 'offres:supprimer' offre.pk %}"
-           data-delete-url="{% url 'offres:supprimer' offre.pk %}"
-           data-delete-message="Supprimer l'offre numéro {{ offre.pk }} ?">
-            Supprimer
-        </a>
+        {% if user.role == "transporteur" or user.role == "administrateur" %}
+            <a class="button" href="{% url 'offres:modifier' offre.pk %}">Modifier</a>
+            <a class="button button-danger" href="{% url 'offres:supprimer' offre.pk %}"
+               data-delete-url="{% url 'offres:supprimer' offre.pk %}"
+               data-delete-message="Supprimer l'offre numéro {{ offre.pk }} ?">
+                Supprimer
+            </a>
+        {% endif %}
         <a class="button button-secondary" href="{% url 'offres:liste' %}">Retour</a>
     </div>
 </div>

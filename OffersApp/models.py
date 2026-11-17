@@ -1,14 +1,18 @@
+from decimal import Decimal
+
 from django.db import models, transaction
 from django.db.models import Q
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
+
+from config.weights import VEHICLE_WEIGHT_LIMITS
 
 
 class Offre(models.Model):
     prix = models.DecimalField(
         max_digits=10,
         decimal_places=2,
-        validators=[MinValueValidator(0.01)]
+        validators=[MinValueValidator(Decimal("0.01"))]
     )
 
     date_proposition = models.DateField(auto_now_add=True)
@@ -122,31 +126,27 @@ class Offre(models.Model):
 
                 # Règle 7 : compatibilité indicative entre le type
                 # de véhicule et le poids de l'expédition.
-                poids = float(expedition.poids_kg)
-
-                limites = {
-                    "camionnette": (0, 1500),
-                    "fourgon": (0, 3500),
-                    "camion_porteur": (3500, 19000),
-                    "semi_remorque": (19000, 26000),
-                }
+                poids = expedition.poids_kg
 
                 type_vehicule = vehicule.type_vehicule
-                minimum, maximum = limites[type_vehicule]
+                minimum, maximum = VEHICLE_WEIGHT_LIMITS[type_vehicule]
 
                 if not (minimum < poids <= maximum):
                     raise ValidationError({
                         "vehicule": (
-                            "Le type du véhicule n'est pas compatible "
-                            "avec le poids de cette expédition."
+                            f"Le poids de cette expédition ({poids} kg) "
+                            f"doit être compris entre "
+                            f"{minimum + Decimal('0.01')} et {maximum} kg "
+                            f"pour un {vehicule.get_type_vehicule_display()}."
                         )
                     })
 
                 if vehicule.capacite_kg < poids:
                     raise ValidationError({
                         "vehicule": (
-                            "La capacité du véhicule est insuffisante "
-                            "pour cette expédition."
+                            f"La capacité du véhicule ({vehicule.capacite_kg} kg) "
+                            f"est insuffisante pour cette expédition "
+                            f"de {poids} kg."
                         )
                     })
 

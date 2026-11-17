@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Mon profil | TransConnect{% endblock %}
+
+{% block content %}
+<section class="auth-shell">
+    <div class="auth-card auth-card-wide">
+        <div class="auth-heading">
+            <span class="auth-eyebrow">Mon compte</span>
+            <h1>Gérer mon profil</h1>
+            <p>Mettez à jour vos coordonnées sans modifier votre rôle.</p>
+        </div>
+        <div class="profile-summary">
+            <span class="profile-avatar">{{ user.username|first|upper }}</span>
+            <div>
+                <strong>{{ user.username }}</strong>
+                <span>{{ user.get_role_display }}</span>
+            </div>
+        </div>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <div class="form-actions">
+                <button class="button" type="submit">Enregistrer les modifications</button>
+                <a class="button button-secondary" href="{% url 'dashboard' %}">Annuler</a>
+            </div>
+        </form>
+        <div class="profile-security">
+            <div>
+                <strong>Sécurité du compte</strong>
+                <span>Changez régulièrement votre mot de passe.</span>
+            </div>
+            <a class="button button-secondary" href="{% url 'password_change' %}">
+                Changer le mot de passe
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -18,13 +18,15 @@
         <div class="detail-item"><dt>Description</dt><dd>{{ expedition.description|default:"Aucune description fournie." }}</dd></div>
     </dl>
     <div class="page-actions">
-        <a class="button" href="{% url 'expeditions:modifier' expedition.reference %}">Modifier</a>
-        <a class="button button-danger"
-           href="{% url 'expeditions:supprimer' expedition.reference %}"
-           data-delete-url="{% url 'expeditions:supprimer' expedition.reference %}"
-           data-delete-message="Supprimer l'expédition {{ expedition.reference|escapejs }} ?">
-            Supprimer
-        </a>
+        {% if user.role == "chargeur" or user.role == "administrateur" %}
+            <a class="button" href="{% url 'expeditions:modifier' expedition.reference %}">Modifier</a>
+            <a class="button button-danger"
+               href="{% url 'expeditions:supprimer' expedition.reference %}"
+               data-delete-url="{% url 'expeditions:supprimer' expedition.reference %}"
+               data-delete-message="Supprimer l'expédition {{ expedition.reference|escapejs }} ?">
+                Supprimer
+            </a>
+        {% endif %}
         <a class="button button-secondary" href="{% url 'expeditions:liste' %}">Retour</a>
     </div>
 </div>

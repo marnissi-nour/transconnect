@@ -8,18 +8,26 @@ from django.views.generic import (
     ListView,
     UpdateView,
 )
+from django.contrib.auth.mixins import LoginRequiredMixin
+from config.access import RoleRequiredMixin, is_admin, user_entreprise
 
 from .models import Expedition
 from .forms import ExpeditionForm
 
 
-class ExpeditionListView(ListView):
+class ExpeditionListView(LoginRequiredMixin, ListView):
     model = Expedition
     template_name = "expeditions/liste.html"
     context_object_name = "expeditions"
 
     def get_queryset(self):
         queryset = Expedition.objects.select_related("entreprise")
+        if not is_admin(self.request.user):
+            entreprise = user_entreprise(self.request.user)
+            if self.request.user.role == "chargeur":
+                queryset = queryset.filter(entreprise=entreprise) if entreprise else queryset.none()
+            else:
+                queryset = queryset.filter(statut="publiee")
         search = self.request.GET.get("q", "").strip()
         statut = self.request.GET.get("statut", "").strip()
         depart = self.request.GET.get("depart", "").strip()
@@ -55,20 +63,39 @@ class ExpeditionListView(ListView):
         return context
 
 
-class ExpeditionCreateView(CreateView):
+class ExpeditionCreateView(LoginRequiredMixin, RoleRequiredMixin, CreateView):
+    allowed_roles = ("chargeur", "administrateur")
     model = Expedition
     form_class = ExpeditionForm
     template_name = "expeditions/form.html"
     success_url = reverse_lazy("expeditions:liste")
 
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["user"] = self.request.user
+        return kwargs
 
-class ExpeditionUpdateView(UpdateView):
+
+class ExpeditionUpdateView(LoginRequiredMixin, RoleRequiredMixin, UpdateView):
+    allowed_roles = ("chargeur", "administrateur")
     model = Expedition
     form_class = ExpeditionForm
     template_name = "expeditions/form.html"
     slug_field = "reference"
     slug_url_kwarg = "reference"
     success_url = reverse_lazy("expeditions:liste")
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        if is_admin(self.request.user):
+            return queryset
+        entreprise = user_entreprise(self.request.user)
+        return queryset.filter(entreprise=entreprise) if entreprise else queryset.none()
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["user"] = self.request.user
+        return kwargs
 
 
 """
@@ -91,7 +118,7 @@ def detail_expedition(request, reference):
 """
 
 
-class ExpeditionDetailView(DetailView):
+class ExpeditionDetailView(LoginRequiredMixin, DetailView):
     model = Expedition
     template_name = "expeditions/detail.html"
     context_object_name = "expedition"
@@ -99,7 +126,13 @@ class ExpeditionDetailView(DetailView):
     slug_url_kwarg = "reference"
 
     def get_queryset(self):
-        return Expedition.objects.select_related("entreprise")
+        queryset = Expedition.objects.select_related("entreprise")
+        if is_admin(self.request.user):
+            return queryset
+        if self.request.user.role == "chargeur":
+            entreprise = user_entreprise(self.request.user)
+            return queryset.filter(entreprise=entreprise) if entreprise else queryset.none()
+        return queryset.filter(statut="publiee")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -110,13 +143,21 @@ class ExpeditionDetailView(DetailView):
         return context
 
 
-class ExpeditionDeleteView(DeleteView):
+class ExpeditionDeleteView(LoginRequiredMixin, RoleRequiredMixin, DeleteView):
+    allowed_roles = ("chargeur", "administrateur")
     model = Expedition
     template_name = "expeditions/confirmer_suppression.html"
     context_object_name = "objet"
     slug_field = "reference"
     slug_url_kwarg = "reference"
     success_url = reverse_lazy("expeditions:liste")
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        if is_admin(self.request.user):
+            return queryset
+        entreprise = user_entreprise(self.request.user)
+        return queryset.filter(entreprise=entreprise) if entreprise else queryset.none()
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

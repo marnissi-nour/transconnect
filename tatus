@@ -1,0 +1,22 @@
+ EntreprisesApp/forms.py           |   12 [32m+[m
+ EntreprisesApp/views.py           |   63 [32m++[m[31m-[m
+ ExpeditionsApp/forms.py           |   11 [32m+[m
+ ExpeditionsApp/models.py          |    4 [32m+[m[31m-[m
+ ExpeditionsApp/views.py           |   53 [32m+[m[31m-[m
+ OffersApp/forms.py                |   23 [32m+[m
+ OffersApp/models.py               |   28 [32m+[m[31m-[m
+ OffersApp/views.py                |   67 [32m++[m[31m-[m
+ README.md                         |  424 [32m+++++++++++++++[m
+ VehiculesApp/forms.py             |   11 [32m+[m
+ VehiculesApp/models.py            |   16 [32m+[m
+ VehiculesApp/views.py             |   62 [32m++[m[31m-[m
+ config/settings.py                |    3 [32m+[m
+ config/urls.py                    |   11 [32m+[m
+ config/views.py                   |  122 [32m++++[m[31m-[m
+ templates/base.html               | 1064 [32m+++++++++++++++++++++++++++++++++++[m[31m--[m
+ templates/expeditions/detail.html |   16 [32m+[m[31m-[m
+ templates/expeditions/liste.html  |   42 [32m+[m[31m-[m
+ templates/home.html               |   71 [32m++[m[31m-[m
+ templates/offres/detail.html      |   14 [32m+[m[31m-[m
+ templates/offres/liste.html       |   30 [32m+[m[31m-[m
+ 21 files changed, 1998 insertions(+), 149 deletions(-)

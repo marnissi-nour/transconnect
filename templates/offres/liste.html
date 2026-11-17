@@ -6,9 +6,17 @@
 <div class="page-heading">
     <div>
         <h1>Offres de transport</h1>
-        <p>Comparez les propositions reçues pour vos expéditions.</p>
+        <p>
+            {% if user.role == "chargeur" %}
+                Consultez les propositions reçues pour vos expéditions.
+            {% else %}
+                Consultez et gérez vos propositions de transport.
+            {% endif %}
+        </p>
     </div>
-    <a class="button" href="{% url 'offres:ajouter' %}">Ajouter une offre</a>
+    {% if user.role == "transporteur" or user.role == "administrateur" %}
+        <a class="button" href="{% url 'offres:ajouter' %}">Ajouter une offre</a>
+    {% endif %}
 </div>
 <form class="filter-panel" method="get">
     <div class="filter-fields">
@@ -70,14 +78,16 @@
             </p>
             <div class="card-actions">
                 <a class="button button-secondary" href="{% url 'offres:detail' offre.pk %}">Voir le détail</a>
-                <span>
-                    <a class="button button-secondary" href="{% url 'offres:modifier' offre.pk %}">Modifier</a>
-                    <a class="button button-danger" href="{% url 'offres:supprimer' offre.pk %}"
-                       data-delete-url="{% url 'offres:supprimer' offre.pk %}"
-                       data-delete-message="Supprimer l'offre numéro {{ offre.pk }} ?">
-                        Supprimer
-                    </a>
-                </span>
+                {% if user.role == "transporteur" or user.role == "administrateur" %}
+                    <span>
+                        <a class="button button-secondary" href="{% url 'offres:modifier' offre.pk %}">Modifier</a>
+                        <a class="button button-danger" href="{% url 'offres:supprimer' offre.pk %}"
+                           data-delete-url="{% url 'offres:supprimer' offre.pk %}"
+                           data-delete-message="Supprimer l'offre numéro {{ offre.pk }} ?">
+                            Supprimer
+                        </a>
+                    </span>
+                {% endif %}
             </div>
         </li>
     {% empty %}
